@@ -25,3 +25,11 @@ load("myfile")
 # txt output
 sink("sink_output.txt")
 sink()
+
+# add data frames to the search path
+attach(mtcars)
+detach(mtcars)
+with(mtcars, {
+    obj_a <- summary(mpg)
+    obj_a
+})
