@@ -14,3 +14,6 @@ list_a
 class(object)
 names(object)
 str(object)
+
+# remove all the objects
+rm(list = ls())
