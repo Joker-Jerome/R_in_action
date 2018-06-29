@@ -17,3 +17,4 @@ subset(df, age > 1 | age < 10, select = c(q1, q2, q3))
 newdf <- sqldf("select * from mtcars where carb=1 order by mpg", row.names = T)
 head(newdf)
 sqldf("select avg(mpg) as avg_mpg, avg(disp) as avg_disp, gear from mtcars where cyl in (4, 6) group by gear")
+ 
