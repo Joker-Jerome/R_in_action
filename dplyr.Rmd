@@ -29,6 +29,57 @@ sample_n(mydata,3)
 sample_frac(mydata,0.1)
 ```
 
+
+## Remove Duplicate Rows based on all the variables (Complete Row), one variable or multiple variables
+```{r}
+x1 = distinct(mydata)
+dim(mydata)
+dim(x1)
+
+x2 = distinct(mydata, Index, .keep_all= TRUE)
+x2 = distinct(mydata, Index, Y2010, .keep_all= TRUE)
+```
+
+## Select function
+```{r}
+# select variables
+mydata2 = select(mydata, Index, State:Y2006)
+mydata2
+```
+
+```{r}
+# drop variables
+mydata_d = select(mydata, -c(Index,State))
+mydata_d
+```
+
+```{r}
+# select or drop with certain features
+mydata3 = select(mydata, starts_with("Y"))
+mydata3 = select(mydata, -starts_with("Y"))
+```
+
+Helpers	Description
+starts_with()	Starts with a prefix
+ends_with()	Ends with a prefix
+contains()	Contains a literal string
+matches()	Matches a regular expression
+num_range()	Numerical range like x01, x02, x03.
+one_of()	Variables in character vector.
+everything()	All variables.
+
+```{r}
+mydata4 = select(mydata, contains("I"))
+mydata5 = select(mydata, State, everything())
+```
+
+
+## rename( ) Function
+```{r}
+# we are renaming 'Index' variable to 'Index1'
+mydata6 = rename(mydata, Index1=Index)
+```
+
 ## dplyr
 
 ```{r cars}
