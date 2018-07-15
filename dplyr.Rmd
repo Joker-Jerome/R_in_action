@@ -1,0 +1,38 @@
+---
+title: "dplyr"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## library 
+
+```{r}
+library(dplyr)
+```
+## building datasets
+```{r}
+mydata = read.csv("income.csv")
+
+```
+
+## Selecting Random N Rows
+```{r}
+sample_n(mydata,3)
+```
+
+## Selecting Random Fraction of Rows
+```{r}
+sample_frac(mydata,0.1)
+```
+
+## dplyr
+
+```{r cars}
+summary(cars)
+```
+
+
