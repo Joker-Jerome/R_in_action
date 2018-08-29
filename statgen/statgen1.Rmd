@@ -1,0 +1,66 @@
+---
+title: "statistical_genetics_1"
+output: html_document
+---
+
+## library
+```{r}
+library(dplyr)
+
+```
+
+## loading the data
+```{r}
+fms <- read.delim(file="/Users/jerome/Documents/ebook/FMS_data.txt", header=T, sep="\t")\
+head(fms)
+```
+
+## Data manipulation
+```{r}
+attach(fms)
+```
+
+
+## Summary
+### identify the minor allel and its frequency
+```{r}
+# The table() function in R outputs the counts of each level of the ordinal
+# variable given as its argument.
+GenoCount <- summary(actn3_rs540874)
+GenoCount
+
+# total number
+NumbObs <- sum(!is.na(actn3_rs540874))
+
+# geno freq
+GenoFreq <- as.vector(GenoCount/NumbObs)
+GenoFreq
+```
+
+```{r}
+FreqA <- (2*GenoFreq[1] + GenoFreq[2])/2
+FreqA
+```
+
+```{r}
+FreqG <- (GenoFreq[2] + 2*GenoFreq[3])/2
+FreqG
+```
+
+```{r}
+# Thus, we report A is the minor allele at this SNP locus, with a frequency
+# of 0.43.
+```
+
+```{r}
+#install.packages("genetics")
+library(genetics)
+Geno <- genotype(actn3_rs540874,sep="")
+summary(Geno)
+```
+
+
+```{r}
+
+```
+
