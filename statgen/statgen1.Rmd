@@ -146,3 +146,27 @@ t.test(Trait[GenoBin==1],Trait[GenoBin==0])
 ```
 
 
+# replace the t-test with wilcoxon rank-sum test
+```{r}
+RankSumtestPval <- function(Geno){
+    alleleMajor <- allele.names(genotype(Geno, sep="",
+    reorder="freq"))[1]
+    GenoWt <- paste(alleleMajor, alleleMajor, sep="")
+    GenoBin <- as.numeric(Geno!=GenoWt)[!is.na(Geno)]
+    Trait <- NDRM.CH[!is.na(Geno)]
+    return(wilcox.test(Trait[GenoBin==1], Trait[GenoBin==0])$p.value)
+}
+
+# genoBIn binary vector indicating whether the geno type is wild type or not
+# run the test
+apply(fmsResistin,2,RankSumtestPval)
+```
+
+
+If a priori dichotomization of the genotype variables is not desirable, we
+can perform an analysis of variance (ANOVA) or the non-parametric analog,
+the Kruskal-Wallis test, to characterize association with a quantitative
+trait.
+
+
+
