@@ -1,0 +1,15 @@
+In general, try to group together related functions into the same .R file (e.g. if you have a bunch of loading functions then putting them in R/load.R would be a good idea). One important thing to note here, is you need to add the @export tag above your function to indicate this function to be “exposed” to users to use. For example:
+
+# Example
+#' @export
+load_mat <- function(infile){
+  in.dt <- data.table::fread(infile, header = TRUE)
+  in.dt <- in.dt[!duplicated(in.dt[, 1]), ]
+  in.mat <- as.matrix(in.dt[, -1, with = FALSE])
+  rownames(in.mat) <- unlist(in.dt[, 1, with = FALSE])
+  in.mat
+}
+
+The #' @export syntax is actually an Roxygen tag which we will discuss below. By doing this, this ensures that the load_mat() function gets added to the NAMESPACE (when you run devtools::document()) to indicate that it needs to be exposed.
+
+

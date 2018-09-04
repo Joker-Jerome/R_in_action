@@ -59,8 +59,51 @@ Geno <- genotype(actn3_rs540874,sep="")
 summary(Geno)
 ```
 
-
+## test for association
 ```{r}
+NamesEsr1Snps <- names(fms)[substr(names(fms),1,4)=="esr1"]
+NamesEsr1Snps
+
+# The genotype matrix can now be defined by selecting the columns of fms that
+# correspond to the esr1 SNP names
+fmsEsr1 <- fms[,is.element(names(fms),NamesEsr1Snps)]
+```
+
+## trait
+```{r}
+# We define our trait to be an indicator for whether BMI is > 25 at baseline:
+Trait <- as.numeric(pre.BMI>25)
 
 ```
+
+## contigency table
+```{r}
+ObsTab <- table(Trait,Geno)
+```
+
+## chisq
+```{r}
+# test function
+chisq_test <- function(Geno) {
+    ObsTab <- table(Trait,Geno)
+    return(chisq.test(ObsTab)$p.value)
+}
+
+table(fmsEsr1$esr1_rs1801132)
+apply(fmsEsr1,2,chisq_test)
+```
+
+## fisher exact test
+```{r}
+# fisher test
+fisher_test <- function(Geno){
+    ObsTab <- table(Trait,Geno)
+    return(fisher.test(ObsTab)$p.value)
+}
+
+apply(fmsEsr1,2,fisher_test)
+```
+
+
+
 

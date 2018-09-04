@@ -1,0 +1,26 @@
+You’ll see that the load_mat() function actually depends on the data.table::fread() function to read in files super quickly. Notice how I did NOT do something like this:
+
+# Example:
+library("data.table")
+load_mat <- function(infile){
+  in.dt <- fread(infile, header = TRUE)
+  in.dt <- in.dt[!duplicated(in.dt[, 1]), ]
+  in.mat <- as.matrix(in.dt[, -1, with = FALSE])
+  rownames(in.mat) <- unlist(in.dt[, 1, with = FALSE])
+  in.mat
+}
+
+Never use library() or require() in a R package!!!!!!
+
+If your R functions require functions from external packages, the way to do this is to use the “double colon” approach. You also need to indicate that your R package depends on these external packages. To do this, you will need you add this information your DESCRIPTION file under the Imports content. For this case, we need the data.table R package, so we added the following to our DESCRIPTION file:
+
+Imports:
+	data.table (>= 1.9.4)
+
+You can indicate multiple external dependencies by just adding them in the next line:
+
+Imports:
+	data.table (>= 1.9.4),
+	dplyr
+
+
