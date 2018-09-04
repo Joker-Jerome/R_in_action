@@ -105,5 +105,30 @@ apply(fmsEsr1,2,fisher_test)
 ```
 
 
+## quantitative trait
+```{r}
+NamesResistinSnps <- names(fms)[substr(names(fms),1,8)=="resistin"]
+fmsResistin <- fms[,is.element(names(fms),NamesResistinSnps)]
+```
+create a new function that takes a single genotype vector, converts
+it to binary elements, and generates p-values based on the t-test of equality
+of the mean trait across the resulting two levels. We first call the genetics
+package since we are using the allele.names() function within this package
+
+```{r}
+library(genetics)
+TtestPval <- function(Geno){
+    alleleMajor <- allele.names(genotype(Geno, sep="",
+    reorder="freq"))[1]
+    GenoWt <- paste(alleleMajor, alleleMajor, sep="")
+    GenoBin <- as.numeric(Geno!=GenoWt)[!is.na(Geno)]
+    Trait <- NDRM.CH[!is.na(Geno)]
+    return(t.test(Trait[GenoBin==1], Trait[GenoBin==0])$p.value)
+}
+
+# genoBIn binary vector indicating whether the geno type is wild type or not
+```
+
+
 
 
