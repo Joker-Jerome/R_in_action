@@ -127,6 +127,9 @@ TtestPval <- function(Geno){
 }
 
 # genoBIn binary vector indicating whether the geno type is wild type or not
+# run the test
+apply(fmsResistin,2,TtestPval)
+
 ```
 
 
