@@ -132,6 +132,17 @@ apply(fmsResistin,2,TtestPval)
 
 ```
 
+## take a closer look at the association test
+```{r}
+Geno <- fms$"resistin_c180g"
+table(Geno)
+GenoWt <- names(table(Geno))[table(Geno)==max(table(Geno))]
+GenoBin <- as.numeric(Geno!=GenoWt)[!is.na(Geno)]
+Trait <- NDRM.CH[!is.na(Geno)]
 
+# run the specific test 
+t.test(Trait[GenoBin==1],Trait[GenoBin==0])
+
+```
 
 
