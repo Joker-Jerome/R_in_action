@@ -169,5 +169,24 @@ the Kruskal-Wallis test, to characterize association with a quantitative
 trait.
 
 # ANOVA 
-# 
+The F-test in one-way analysis of variance is used to assess whether the expected values of a quantitative variable within several pre-defined groups differ from each other. For example, suppose that a medical trial compares four treatments. The ANOVA F-test can be used to assess whether any of the treatments is on average superior, or inferior, to the others versus the null hypothesis that all four treatments yield the same mean response.
+
+```{r}
+Geno <- as.factor(resistin_c180g)
+Trait <- NDRM.CH
+
+```
+
+We use the lm() function in R to perform ANOVA. Alternatively, the
+aov() function can be applied, though the corresponding output of the associated
+print() and summary() functions will differ. Here we indicate that
+we want to exclude individuals with missing values for the trait, coded as NA,
+using the option na.action==na.exclude. The summary() function takes as
+input an object of class \lm" and provides us with the details of the model-
+fitting results, including the overall F-test for association.
+
+```{r}
+AnovaMod <- lm(Trait~Geno, na.action=na.exclude)
+summary(AnovaMod)
+```
 
