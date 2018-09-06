@@ -190,3 +190,4 @@ AnovaMod <- lm(Trait~Geno, na.action=na.exclude)
 summary(AnovaMod)
 ```
 
+## regression
