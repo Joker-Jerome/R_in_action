@@ -190,4 +190,43 @@ AnovaMod <- lm(Trait~Geno, na.action=na.exclude)
 summary(AnovaMod)
 ```
 
+# K-W test
+A Kruskal-Wallis (K-W) test can also be applied and is more appropriate
+in small-sample settings in which the assumption of normality may not be
+reasonable.
+
+```{r}
+kruskal.test(Trait, Geno, na.action=na.exclude)
+```
+
+In this example, the K-W test yields a p-value of 0:085, and a similar conclusion
+is reached that there is not sufficient evidence of an association between
+resistin c180g and percentage change in muscle strength of the nondominant
+arm as measured by NDRM.CH.
+
+
 ## regression
+
+
+Alternatively, we can fit a multivariable model to either quantitative
+or binary traits. Multivariable models have the primary advantage of
+allowing us to account appropriately for multiple potential confounders and
+effect modifiers.
+
+# Simple and multivariable linear regression
+g(E[y]) = XB
+
+\[
+g(E(y)) = X\cdot \beta
+\]
+
+\[
+\mathbf y = \mathbf X \mathbf \beta + \mathbf \epsilon
+\]
+
+\[
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+
+
