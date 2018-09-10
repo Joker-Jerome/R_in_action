@@ -285,6 +285,30 @@ predict.lm(ModFull, NewDat, interval="prediction", level=0.95)
 ```
 
 
+## Logistic regression
+for binary traits
+As described above, the generalized linear model of Equation (2.9) can also
+be applied to a binary trait. In this setting, g() is commonly defined as the
+logit function, reducing Equation (2.9) to the logistic regression model
+
+## LD
+
+(Measuring LD using D'). In this example, we use the R package
+genetics. Loading this package requires several additional R packages
+that are not included in the typical R installation, including MASS, combinat,
+gdata, gtools and mvtnorm. Additional details on installing new packages
+can be found in the appendix. To load the necessary R packages, we use the
+library() function as follows:
+
+```{r}
+library(genetics)
+
+# create objects of class genotype for each of our SNP variables.
+actn3_r577x[1:10]
+Actn3Snp1 <- genotype(actn3_r577x,sep="")
+Actn3Snp2 <- genotype(actn3_rs540874,sep="")
+Actn3Snp1[1:10]
+```
 
 
 
