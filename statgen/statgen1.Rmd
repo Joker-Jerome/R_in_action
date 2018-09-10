@@ -325,5 +325,13 @@ LD(Actn3Snp1,Esr1Snp1)$"D'"
 ```
 
 
+```{r}
+# pairwise LD
+Actn3Snp3 <- genotype(actn3_rs1815739,sep="")
+Actn3Snp4 <- genotype(actn3_1671064,sep="")
+Actn3AllSnps <- data.frame(Actn3Snp1,Actn3Snp2,Actn3Snp3,Actn3Snp4)
+
+LD(Actn3AllSnps)$"D'"
+```
 
 
