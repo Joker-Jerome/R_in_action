@@ -342,3 +342,10 @@ library(LDheatmap)
 LDheatmap(Actn3AllSnps, LDmeasure="D'")
 ```
 
+
+Another intuitively appealing measure of LD is the quantity r2
+This measure
+is based on Pearson's X2-statistic for the test of no association between
+the rows and columns of an r  c contingency table such as the one given in
+Table 3.2. Specifically, r2 is defined as
+
