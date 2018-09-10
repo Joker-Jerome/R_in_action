@@ -239,3 +239,54 @@ fitting a model of the form
 \]
 
 # linear regression
+
+```{r}
+
+## interaction considered
+Geno <- actn3_r577x
+Trait <- NDRM.CH
+ModFull <- lm(Trait~Geno+Gender+Geno*Gender, na.action=na.exclude)
+
+summary(ModFull)
+```
+
+```{r}
+## interaction not considered
+ModReduced <- lm(Trait~Geno+Gender, na.action=na.exclude)
+summary(ModReduced)
+```
+
+## using anova to compare the full model and the reduced model
+The anova() function in R provides us with an F-test comparing the full and
+reduced models. Formally, this is a test of the null hypothesis that there is no
+interaction between genotype and gender:
+
+```{r}
+anova(ModReduced, ModFull)
+```
+
+
+The F-test statistic with 2 and 597 degrees of freedom is 3:07, with a corresponding
+p-value of 0:047. We therefore conclude that there does appear
+to be an interaction between gender and genotype based on these data and
+under the modeling assumptions.
+
+## prediction
+
+Finally, the predicted change in muscle strength for the non-dominant arm
+and corresponding prediction intervals based on the full model and for each
+level of genotype and gender can be generated as follows:
+```{r}
+# new data
+NewDat <- data.frame(Geno=rep(c("CC","CT","TT"),2),Gender=c(rep("Female",3), rep("Male",3)))
+
+# prediction
+predict.lm(ModFull, NewDat, interval="prediction", level=0.95)
+```
+
+
+
+
+
+
+
