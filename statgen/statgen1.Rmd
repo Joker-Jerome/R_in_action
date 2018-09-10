@@ -304,7 +304,7 @@ library() function as follows:
 library(genetics)
 
 # create objects of class genotype for each of our SNP variables.
-# ex
+# example of snps in the same gene
 actn3_r577x[1:10]
 Actn3Snp1 <- genotype(actn3_r577x,sep="")
 Actn3Snp2 <- genotype(actn3_rs540874,sep="")
@@ -317,6 +317,12 @@ class(Actn3Snp1)
 LD(Actn3Snp1,Actn3Snp2)$"D'"
 ```
 
+```{r}
+# example of snps across different genes
+Esr1Snp1 <- genotype(esr1_rs1801132,sep="")
+LD(Actn3Snp1,Esr1Snp1)$"D'"
+
+```
 
 
 
