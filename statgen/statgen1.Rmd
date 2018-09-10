@@ -229,4 +229,13 @@ y_i = \beta_0 + \beta_1 x_i + \epsilon_i
 \]
 
 
+For example, suppose we have m covariates, given by
+zi1; : : : ; zim for the ith individual. For example, zi1 may be gender and zi2
+may represent smoking status for individual i. We are often interested in
+fitting a model of the form
 
+\[
+\mathbf y = \mathbf \beta_0 + \mathbf \beta_1\mathbf x_i + \sum_{j=1}^{m}{a_jz_{ij}} + \mathbf \beta + \mathbf \epsilon
+\]
+
+# linear regression
