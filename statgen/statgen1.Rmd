@@ -349,3 +349,11 @@ is based on Pearson's X2-statistic for the test of no association between
 the rows and columns of an r  c contingency table such as the one given in
 Table 3.2. Specifically, r2 is defined as
 
+p72 very complex formula
+chi square test
+
+Notably, the difference between D0 and r2 rests in the type of adjustment
+made to the scalar D. In both cases, this adjustment involves the marginal
+allele frequencies since the value of D will depend on these. Investigators
+tend to prefer r2 due to its straightforward relationship to the usual chi2-
+test for a contingency table analysis
