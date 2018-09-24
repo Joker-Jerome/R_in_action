@@ -357,3 +357,6 @@ made to the scalar D. In both cases, this adjustment involves the marginal
 allele frequencies since the value of D will depend on these. Investigators
 tend to prefer r2 due to its straightforward relationship to the usual chi2-
 test for a contingency table analysis
+
+
+
