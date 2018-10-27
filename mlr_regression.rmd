@@ -143,52 +143,35 @@ cd_test$Total_Income <- NULL
 ```
 
 
-# machine learning
+# machine learning (binary classification case here)
 ```{r}
 # create a task user friendly
 trainTask <- makeClassifTask(dasta = cd_train,target = "Loan_Status")
 testTask <- makeClassifTask(data = cd_test, target = "Loan_Status")
 ```
 
-
+# change the labels
+As you can see, it provides a description of cd_train data. However, an evident problem is that it is considering positive class as N, whereas it should be Y. Let’s modify it:
 ```{r}
 trainTask <- makeClassifTask(data = cd_train,target = "Loan_Status", positive = "Y")
 ```
 
+# normalize the variables
 
-```{r} 
-
-# pathlogy, cancer 
-# Until here, we’ve performed all the important transformation steps except normalizing the skewed variables. That will be done after we create the task.
-
-erainTask <- makeClassifTask(data = cd_train,target = "Loan_Status")
-testTask <- makeClassifTask(data = cd_test, target = "Loan_Status")
-
-```
-# discounted
-
-
-Now, we will normalize the data. 
-For this step, we’ll use normalizeFeatures function from mlr package.
-normalize the variables
+```{r}
 trainTask <- normalizeFeatures(trainTask,method = "standardize")
 testTask <- normalizeFeatures(testTask,method = "standardize")
+```
 
-
+# drop the variables
+Before we start applying algorithms, we should remove the variables which are not required.
 
 ```{r}
 trainTask <- dropFeatures(task = trainTask,features = c("Loan_ID","Married.dummy"))
-# #Feature importance
-im_feat <- generateFilterValuesData(trainTask, method = c("information.gain","chi.squared"))
-plotFilterValues(im_feat,n.show = 20)
-}
+
 ```
 
 
-```{r}
-#to launch its shiny application
-plotFilterValuesGGVIS(im_feat)
-```
 
 # Some models
 ```{r}

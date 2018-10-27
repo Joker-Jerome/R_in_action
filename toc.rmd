@@ -1,0 +1,60 @@
+---
+title: Getting Data and Using APIs
+date: Sept 26, 2018
+output: 
+    html_document:
+        theme: cosmo 
+        toc: true
+        toc_float: true
+        highlight: tango
+        number_sections: false
+        toc_depth: 5
+fig_width: 5
+fig_height: 5
+---
+    
+    
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center", out.width = '90%')
+```
+
+Before we begin, you will need to install
+these packages
+
+```{r,eval=FALSE}
+install.packages("jsonlite")
+install.packages("rvest")
+install.packages("pollstR")
+```
+
+Now we load a few R packages
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(jsonlite)
+library(rvest)
+library(pollstR)
+```
+
+# Motivation
+
+Today we are going to talk about getting data, 
+examples of common data formats, and useful 
+tools to access data. 
+
+First let's have a bit of a philosophical 
+discussion about data. 
+
+## "Raw" vs "Clean" data
+
+As data analysts, this is what we wished data 
+looked like whenever we start a project
+
+### "Raw" vs "Clean" data
+
+####  "Raw" vs "Clean" data
+
+
+```{r, echo=FALSE}
+knitr::include_graphics("https://github.com/jtleek/advdatasci/raw/master/imgs/tidy-data-example.png")
+```
