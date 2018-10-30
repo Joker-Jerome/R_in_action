@@ -24,3 +24,7 @@ if(interactive()) {
 } else # (more constant over time):
     names(rev(sort(z))[1:10])
 # }
+
+
+# very quick solution
+print(format(object.size(genotype_df), units = "Gb"))
