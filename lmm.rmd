@@ -1,0 +1,18 @@
+---
+title: Linear Mixed Models
+author: Jerome
+output:
+    html_document:
+        theme: cosmo 
+        toc: true
+        toc_float: true
+        highlight: tango
+        number_sections: false
+        toc_depth: 5
+    
+---
+
+```{r}
+
+```
+

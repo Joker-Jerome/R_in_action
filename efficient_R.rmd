@@ -1,0 +1,24 @@
+---
+title: Efficient R
+
+---
+
+## Trace Memory
+```{r}
+m <- matrix(0, 3, 3)
+tracemem(m)
+m[1, 1] <- 1
+nrow(m)
+m[1, 1] <- 2
+
+#  non primitive functions will make a copy of the object
+```
+
+Primitive functions are only found in the base package, and since they operate at a low level, they can be more efficient (primitive replacement functions don’t have to make copies), and can have different rules for argument matching (e.g., switch and call). This, however, comes at a cost of behaving differently from all other functions in R. Hence the R core team generally avoids creating them unless there is no other option.
+
+
+## Splitting Problems into Smaller Tasks
+```{r}
+
+```
+
