@@ -73,3 +73,21 @@ str(y)
 #>  $ b: NULL
 ```
 
+# exclude the columns you don't want
+```{r}
+df[setdiff(names(df), "z")]
+```
+
+
+```{r}
+## named factor
+x <- factor(LETTERS[1:4]); names(x) <- letters[1:4]
+x
+rep(x, 2)
+rep(x, each = 2)
+
+# rep.int and rep_len return no attributes (except the class if returning a factor).
+rep.int(x, 2)  # no names
+rep_len(x, 10)
+```
+
