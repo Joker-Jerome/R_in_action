@@ -1,4 +1,5 @@
 library(methods)
+library(sloop)
 
 # definitions of the s4 class
 setClass("Person", 
