@@ -1,0 +1,108 @@
+---
+title: "enrichment_plot"
+author: "Jerome"
+date: "2/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+```
+
+
+```{r}
+library(vctrs)
+library(enrichplot)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+```
+
+# reading data
+```{r}
+seq_data <- read_excel("~/Downloads/bipseq-redpinkpathways-aj20190423-al2020211-genes.xlsx", col_names = T)
+head(seq_data)
+```
+
+# extract the gene
+```{r}
+seq_data_a <- seq_data[1:15, ]
+seq_data_b <- seq_data[40:54, ]
+seq_data_a$p_log10 <- -log(seq_data_a$p.adjust, 10)
+seq_data_b$p_log10 <- -log(seq_data_b$p.adjust, 10)
+
+# split num function
+split_num <- function(str) {
+    tmp_vec <- as.numeric(unlist(strsplit(str, split = "\\/")))
+    return(tmp_vec[1]/tmp_vec[2])
+}
+
+# extract num function
+extract_num <- function(str) {
+    tmp_vec <- as.numeric(unlist(strsplit(str, split = "\\/")))
+    return(tmp_vec[1])
+}
+
+# bgratio
+seq_data_a$BgRatio_num <- as.vector(sapply(seq_data_a$BgRatio, function(x) split_num(x)))
+seq_data_b$BgRatio_num <- as.vector(sapply(seq_data_b$BgRatio, function(x) split_num(x)))
+
+# generatio
+seq_data_a$GeneRatio_num <- as.vector(sapply(seq_data_a$GeneRatio, function(x) split_num(x)))
+seq_data_b$GeneRatio_num <- as.vector(sapply(seq_data_b$GeneRatio, function(x) split_num(x)))
+seq_data_a$GeneNumber <- as.vector(sapply(seq_data_a$GeneRatio, function(x) extract_num(x)))
+seq_data_b$GeneNumber <- as.vector(sapply(seq_data_b$GeneRatio, function(x) extract_num(x)))
+
+# go term 
+paste_str <- function(df) {
+    output_vec <- c()
+    for (i in 1:nrow(df)) {
+        output_vec <- c(output_vec, paste0(df[i, ]))
+    }
+    return(output_vec)
+}
+
+seq_data_a$GoDes <- paste(seq_data_a$ID, seq_data_a$Description)
+seq_data_b$GoDes <- paste(seq_data_b$ID, seq_data_b$Description)
+
+colnames(seq_data_a)
+```
+
+# sorting 
+```{r}
+seq_data_a_sorted <- seq_data_a %>% arrange(BgRatio_num)
+seq_data_b_sorted <- seq_data_b %>% arrange(BgRatio_num)
+
+```
+
+# plotting 
+```{r}
+
+p <- ggplot(seq_data_a, aes(x = BgRatio_num, y = GoDes, size = GeneNumber, color = p_log10))
+p <- p + geom_point(alpha=0.5)
+p
+
+
+```
+
+
+```{r}
+p <- ggplot(seq_data_b, aes(x = BgRatio_num, y = GoDes, size = GeneNumber, color = p_log10))
+p <- p + geom_point(alpha=0.5)
+p
+```
+
+```{r}
+p <- ggplot(seq_data_a_sorted, aes(x = BgRatio_num, y = GoDes, size = GeneNumber, color = p_log10))
+p <- p + geom_point(alpha=0.5)
+p
+```
+
+
+```{r}
+
+```
+
