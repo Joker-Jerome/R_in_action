@@ -1,0 +1,156 @@
+---
+title: "c_interface"
+author: "Jerome"
+date: "5/5/2020"
+output: html_document
+---
+
+```{r}
+#install.packages("inline")
+#install.packages("pryr")
+library(inline)
+library(pryr)
+```
+
+
+http://adv-r.had.co.nz/C-interface.html#calling-c
+
+# short example
+```{r}
+add <- cfunction(c(a = "integer", b = "integer"), "
+  SEXP result = PROTECT(allocVector(REALSXP, 1));
+  REAL(result)[0] = asReal(a) + asReal(b);
+  UNPROTECT(1);
+
+  return result;
+")
+
+add(1, 5)
+#> [1] 6
+```
+
+# data structures 
+```{r}
+library(pryr)
+#> Registered S3 method overwritten by 'pryr':
+#>   method      from
+#>   print.bytes Rcpp
+
+sexp_type(10L)
+#> [1] "INTSXP"
+sexp_type("a")
+#> [1] "STRSXP"
+sexp_type(T)
+#> [1] "LGLSXP"
+sexp_type(list(a = 1))
+#> [1] "VECSXP"
+sexp_type(pairlist(a = 1))
+#> [1] "LISTSXP"
+```
+
+# PROTECT key words 
+
+At the heart of every C function are conversions between R data structures and C data structures. Inputs and output will always be R data structures (SEXPs) and you will need to convert them to C data structures in order to do any work. This section focusses on vectors because they’re the type of object you’re most likely to work with.
+
+An additional complication is the garbage collector: if you don’t PROTECT an R object you create, the garbage collector will think they are unused and delete them.
+
+The simplest way to create a new R-level object is to use allocVector(). It takes two arguments, the type of SEXP (or SEXPTYPE) to create, and the length of the vector. The following code creates a three element list containing a logical vector, a numeric vector, and an integer vector, all of length four:
+
+
+```{r}
+dummy <- cfunction(body = '
+  SEXP dbls = PROTECT(allocVector(REALSXP, 4));
+  SEXP lgls = PROTECT(allocVector(LGLSXP, 4));
+  SEXP ints = PROTECT(allocVector(INTSXP, 4));
+
+  SEXP vec = PROTECT(allocVector(VECSXP, 3));
+  SET_VECTOR_ELT(vec, 0, dbls);
+  SET_VECTOR_ELT(vec, 1, lgls);
+  SET_VECTOR_ELT(vec, 2, ints);
+
+  UNPROTECT(4);
+  return vec;
+')
+dummy()
+#> [[1]]
+#> [1] 4.64e-310 4.64e-310 4.64e-310 4.64e-310
+#> 
+#> [[2]]
+#> [1]   NA TRUE TRUE TRUE
+#> 
+#> [[3]]
+#> [1] NA  1  1  1
+```
+
+You might wonder what all the PROTECT() calls do. They tell R that the object is in use and shouldn’t be deleted if the garbage collector is activated. (We don’t need to protect objects that R already knows we’re using, like function arguments.)
+
+You also need to make sure that every protected object is unprotected. UNPROTECT() takes a single integer argument, n, and unprotects the last n objects that were protected. The number of protects and unprotects must match. If not, R will warn about a “stack imbalance in .Call”. Other specialised forms of protection are needed in some circumstances:
+
+UNPROTECT_PTR() unprotects the object pointed to by the SEXPs.
+
+PROTECT_WITH_INDEX() saves an index of the protection location that can be used to replace the protected value using REPROTECT().
+
+
+# memset() funtion   
+
+you may want to loop through each element in the vector and set it to a constant. The most efficient way to do that is to use memset()
+```{r}
+zeroes <- cfunction(c(n_ = "integer"), '
+  int n = asInteger(n_);
+
+  SEXP out = PROTECT(allocVector(INTSXP, n));
+  memset(INTEGER(out), 0, n * sizeof(int));
+  UNPROTECT(1);
+
+  return out;
+')
+zeroes(10);
+#>  [1] 0 0 0 0 0 0 0 0 0 0
+```
+
+# missing values 
+```{r}
+is_na <- cfunction(c(x = "ANY"), '
+  int n = length(x);
+
+  SEXP out = PROTECT(allocVector(LGLSXP, n));
+
+  for (int i = 0; i < n; i++) {
+    switch(TYPEOF(x)) {
+      case LGLSXP:
+        LOGICAL(out)[i] = (LOGICAL(x)[i] == NA_LOGICAL);
+        break;
+      case INTSXP:
+        LOGICAL(out)[i] = (INTEGER(x)[i] == NA_INTEGER);
+        break;
+      case REALSXP:
+        LOGICAL(out)[i] = ISNA(REAL(x)[i]);
+        break;
+      case STRSXP:
+        LOGICAL(out)[i] = (STRING_ELT(x, i) == NA_STRING);
+        break;
+      default:
+        LOGICAL(out)[i] = NA_LOGICAL;
+    }
+  }
+  UNPROTECT(1);
+
+  return out;
+')
+is_na(c(NA, 1L))
+#> [1]  TRUE FALSE
+is_na(c(NA, 1))
+#> [1]  TRUE FALSE
+is_na(c(NA, "a"))
+#> [1]  TRUE FALSE
+is_na(c(NA, TRUE))
+#> [1]  TRUE FALSE
+
+```
+
+
+# accessing the data 
+```{r}
+
+```
+
