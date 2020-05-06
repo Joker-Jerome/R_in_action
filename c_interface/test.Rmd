@@ -8,8 +8,10 @@ output: html_document
 ```{r}
 #install.packages("inline")
 #install.packages("pryr")
+#install.packages("microbenchmark")
 library(inline)
 library(pryr)
+library(microbenchmark)
 ```
 
 
@@ -196,4 +198,71 @@ microbenchmark(
 #>  add_one(x) 17.60 19.50 21.31  20.10 21.50 30.1   100
 #>  add_two(x)  5.44  6.03  7.58   6.42  7.07 14.9   100
 ```
+
+# character vectors and lists
+```{r}
+abc <- cfunction(NULL, '
+  SEXP out = PROTECT(allocVector(STRSXP, 3));
+
+  SET_STRING_ELT(out, 0, mkChar("a"));
+  SET_STRING_ELT(out, 1, mkChar("b"));
+  SET_STRING_ELT(out, 2, mkChar("c"));
+
+  UNPROTECT(1);
+
+  return out;
+')
+abc()
+#> [1] "a" "b" "c"
+```
+
+# modifying inputs 
+```{r}
+add_three <- cfunction(c(x = "numeric"), '
+  REAL(x)[0] = REAL(x)[0] + 3;
+  return x;
+')
+x <- 1
+y <- x
+add_three(x)
+#> [1] 4
+x
+#> [1] 4
+y
+#> [1] 4
+
+```
+
+```{r}
+add_four <- cfunction(c(x = "numeric"), '
+  SEXP x_copy = PROTECT(duplicate(x));
+  REAL(x_copy)[0] = REAL(x_copy)[0] + 4;
+  UNPROTECT(1);
+  return x_copy;
+')
+x <- 1
+y <- x
+add_four(x)
+#> [1] 5
+x
+#> [1] 1
+y
+#> [1] 1
+```
+
+Coercing scalars
+There are a few helper functions that turn length one R vectors into C scalars:
+
+asLogical(x): LGLSXP -> int
+asInteger(x): INTSXP -> int
+asReal(x): REALSXP -> double
+CHAR(asChar(x)): STRSXP -> const char*
+And helpers to go in the opposite direction:
+
+ScalarLogical(x): int -> LGLSXP
+ScalarInteger(x): int -> INTSXP
+ScalarReal(x): double -> REALSXP
+mkString(x): const char* -> STRSXP
+These all create R-level objects, so they need to be PROTECT()ed
+
 
