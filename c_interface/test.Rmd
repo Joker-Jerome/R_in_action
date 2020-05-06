@@ -265,4 +265,33 @@ ScalarReal(x): double -> REALSXP
 mkString(x): const char* -> STRSXP
 These all create R-level objects, so they need to be PROTECT()ed
 
+# pairlist 
+
+n R code, there are only a few instances when you need to care about the difference between a pairlist and a list (as described in Pairlists). In C, pairlists play much more important role because they are used for calls, unevaluated arguments, attributes, and in .... In C, lists and pairlists differ primarily in how you access and name elements.
+
+Unlike lists (VECSXPs), pairlists (LISTSXPs) have no way to index into an arbitrary location. Instead, R provides a set of helper functions that navigate along a linked list. The basic helpers are CAR(), which extracts the first element of the list, and CDR(), which extracts the rest of the list. These can be composed to get CAAR(), CDAR(), CADDR(), CADDDR(), and so on. Corresponding to the getters, R provides setters SETCAR(), SETCDR(), etc.
+
+The following example shows how CAR() and CDR() can pull out pieces of a quoted function call:
+```{r}
+car <- cfunction(c(x = "ANY"), 'return CAR(x);')
+cdr <- cfunction(c(x = "ANY"), 'return CDR(x);')
+cadr <- cfunction(c(x = "ANY"), 'return CADR(x);')
+
+x <- quote(f(a = 1, b = 2))
+# The first element
+car(x)
+#> f
+# Second and third elements
+cdr(x)
+#> $a
+#> [1] 1
+#> 
+#> $b
+#> [1] 2
+# Second element
+car(cdr(x))
+#> [1] 1
+cadr(x)
+#> [1] 1
+```
 
