@@ -38,6 +38,83 @@ legend(-2.5, 0.6, legend=c("N = 10","N = 20","N = 30", "N = 50", "N = 100"),
 
 ```
 
+# Power calculation
+# Binary outcome
+### Power for given sample size
+```{r}
+power.prop.test(n=28,p1=0.3,p2=0.55)
+```
+
+### Sample size for given power
+```{r}
+power.prop.test(power=0.8,p1=0.3,p2=0.55)
+
+```
+
+# Continuous outcome
+### Power for given sample size
+```{r}
+power.t.test(n=6,delta=0.3,sd=0.28,type="two.sample")
+
+```
+
+### Sample size for a given power
+```{r}
+power.t.test(power=0.9,delta=0.3,sd=0.28,type="two.sample")
+
+```
+
+### Plotting power against sample size
+```{r}
+samplesizes <- seq(from=10,to=200,by=10)
+power.samplesizes <- power.prop.test(n=samplesizes,p1=0.3,p2=0.55)$power
+plot(samplesizes,
+     power.samplesizes,
+     xlim=c(0,200),
+     xlab="Sample size",
+     ylab="Expected power",
+     ylim=c(0,1),
+     type="b",
+     col="darkorange",
+     lwd=1,
+     axes=FALSE)
+axis(1,at=c(0,50,100,150,200))
+axis(2,at=c(0,0.25,0.5,0.75,1),labels=paste(c(0,25,50,75,100),"%"))
+```
+
+### Plotting power against differences
+```{r}
+differences <- seq(from=0.1,to=2,by=0.1)
+samplesize.sd04 <- sapply(differences,
+                          function(d){power.t.test(power=0.9,
+                                                   delta=d,
+                                                   sd=0.4,
+                                                   type="two.sample")$n})
+samplesize.sd03 <- sapply(differences,
+                          function(d){power.t.test(power=0.9,
+                                                   delta=d,
+                                                   sd=0.3,
+                                                   type="two.sample")$n})
+plot(differences,
+     samplesize.sd04,
+     xlim=c(0,2),
+     xlab="Expected difference between groups",
+     ylab="Required sample size",
+     ylim=c(0,350),
+     type="b",
+     col="darkblue",
+     lwd=1,
+     axes=FALSE)
+lines(differences, 
+      samplesize.sd03,
+      col="turquoise",
+      lwd=1,
+      type="b")
+axis(1,at=c(0,0.2,0.5,1,1.5,2))
+axis(2,at=c(350,100,50,10,0))
+legend(x="topright",lwd=5,bty="n",legend=c("SD=0.4","SD=0.3"),col=c("darkblue","turquoise"))
+```
+
 # survival 
 ```{r}
 
