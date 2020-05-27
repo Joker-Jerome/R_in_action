@@ -1,0 +1,34 @@
+---
+title: "survival_assumption"
+author: "Jerome"
+date: "5/27/2020"
+output: html_document
+---
+
+```{r}
+library("survival")
+library("survminer")
+
+res.cox <- coxph(Surv(time, status) ~ age + sex + wt.loss, data =  lung)
+res.cox
+```
+
+In principle, the Schoenfeld residuals are independent of time. A plot that shows a non-random pattern against time is evidence of violation of the PH assumption.
+
+The proportional hazard assumption is supported by a non-significant relationship between residuals and time, and refuted by a significant relationship.
+
+```{r}
+test.ph <- cox.zph(res.cox)
+test.ph
+```
+
+```{r}
+?cox.zph
+```
+
+```{r}
+ggcoxzph(test.ph)
+
+# The pattern looks fairly symmetric around 0.
+```
+
