@@ -32,6 +32,17 @@ ggcoxzph(test.ph)
 # The pattern looks fairly symmetric around 0.
 ```
 
+```{r}
+ggcoxzph(test.ph, var = "age")
+
+```
+
+
+```{r}
+ggcoxzph(test.ph, var = "sex")
+
+```
+
 # Testing influential observations
 
 Specifying the argument type = “dfbeta”, plots the estimated changes in the regression coefficients upon deleting each observation in turn; likewise, type=“dfbetas” produces the estimated changes in the coefficients divided by their standard errors.
@@ -40,6 +51,9 @@ Specifying the argument type = “dfbeta”, plots the estimated changes in the 
 ggcoxdiagnostics(res.cox, type = "dfbeta",
                  linear.predictions = FALSE, ggtheme = theme_bw())
 ```
+
+
+
 
 ```{r}
 ggcoxdiagnostics(res.cox, type = "deviance",
