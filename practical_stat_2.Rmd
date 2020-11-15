@@ -1,0 +1,6 @@
+---
+title: "practical_stat_2"
+author: "Jerome"
+date: "11/8/2020"
+output: html_document
+---
