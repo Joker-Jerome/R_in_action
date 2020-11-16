@@ -1,0 +1,181 @@
+---
+title: "intro_simulation_r"
+author: "Jerome"
+date: "11/15/2020"
+output: html_document
+---
+
+
+## Introductory Examples
+
+Example 1.1. Sampling Computer Chips. Suppose there are 100 memory chips in a box, of which 90 are “good” and 10 are “bad.” We withdraw five of the 100 chips at random to upgrade a computer. What is the probability that all five chips are good?
+```{r}
+# 1 combination 
+choose(90, 5)/choose(100, 5)
+
+# 2 
+n_sim = 10000
+res_vec = rep(NA, n_sim)
+res_vec = numeric(n_sim)
+for (i in 1:n_sim) {
+    tmp_s = sample(1:100, 5, replace = F)
+    res_vec[i] = sum(tmp_s <= 90)
+    
+}
+mean(res_vec == 5)
+```
+
+To implement sampling with replacement, one would have to include the argument repl=T. But in taking chips from the box, we want to sample without replacement. This is the default sampling mode in R, so the effect
+is the same whether we include or omit the argument repl=F.
+
+
+Example 1.2. Birthday Matches—Combinatorial Approach. Suppose there are n = 25 people in a room. What is the probability that two or more of them have the same birthday? This is an intriguing problem because many people expect the probability to be a lot smaller than it is.
+
+```{r}
+n = 60
+p = numeric(n)
+for (i in 1:n) {
+    
+  #q = prod(1 - (0:(i-1))/365)
+    #365! / (365-n)!  / 365^n
+    #365 * 364 .... (365-n+1)
+    #365 * 365 ...  365
+    q = prod(1 - (0:(i-1))*(1/365))
+        #q =  (factorial(365)/factorial(365-n))/365^n
+    p[i] = 1 - q
+# vector of room sizes
+# initialize vector, all 0s
+# index values for loop
+# P(No match) if i people in room
+# changes ith element of p
+# plot of p against n
+}
+plot(1:n, p)
+```
+
+Example 1.3. Birthday Matches—Using Simulation. Again, we focus attention on a room with n = 25 randomly chosen people and assume there are 365 equally likely birthdays in a year. We begin by simulating the birthdays in one room. Numbering the days of the year from 1 to 365, we can use the sample function to get a list of 25 random birthdays in a room. Of course, we sample with replacement here because we need to allow for the possibility of matching birthdays. One use of this function with the appropriate parameters gives the following result:
+
+```{r}
+set.seed(1237)
+m = 100000
+n = 25
+x = numeric(m)
+for (i in 1:m)
+{
+  b = sample(1:365, n, repl=T)
+  x[i] = n - length(unique(b))
+}
+mean(x == 0)
+mean(x)
+cutp = (0:(max(x)+1)) - .5
+hist(x, breaks=cutp, prob=T)
+# iterations; people in room
+# vector for numbers of matches
+# n random birthdays in ith room
+# no. of matches in ith room
+# approximates P{X=0}; E(X)
+# break points for histogram
+# relative freq. histogram
+```
+# what about specific number of matches like 2 
+c(365, 24) * 24 * p(24, 23)/365^n 
+```{r}
+
+```
+
+Example 1.4. Estimating the Probability that a Die Shows a Six. As an ele- mentary illustration of confidence intervals made with formula (1.2), suppose 20 students in a class were each asked to roll a die 30 times. We note the number X of 6s observed and find the corresponding confidence interval.
+
+
+```{r}
+set.seed(0)
+n_sim = 1000
+res = numeric(n_sim)
+for (i in 1:n_sim) {
+    res[i] = sample(1:6, 1)
+}
+mean(res == 6)
+z = qnorm(0.975)
+mean_vec + z_
+
+```
+
+# sd 
+```{r}
+
+n_sim = 1000
+res_list = list()
+
+for (i in 1:n_sim) {
+    
+    res_list[[i]] = sample(1:6, 1000, replace = T)
+}
+
+mean_vec = unlist(lapply(res_list, function(x) mean(x == 6)))
+the_sd = sqrt(1/6 * (1-1/6)/1000)
+sim_sd = sd(mean_vec)
+
+dnorm(0.95)
+
+z = qnorm(0.975)
+mean(mean_vec) - qnorm(0.975) * the_sd 
+mean(mean_vec) + qnorm(0.975) * the_sd 
+```
+
+
+
+Example 1.5. Two Coverage Probabilities. Suppose a new process for making a prescription drug is in development. Of n = 30 trial batches made with the current version of the process, X = 24 batches give satisfactory results. Then p = 24/30 = 0.8 estimates the population proportion π = P(Success) of satisfactory batches with the current version of the process. Wondering how near p = 0.8 might be to π, the investigators use (1.2) to obtain the approximate 95% confidence interval 0.8 ± 0.143 or (0.657, 0.943).
+
+
+
+```{r}
+                                          # number of trials
+                                          # n+1 possible outcomes
+                                          # n+1 Margins of error
+                                          # n+1 Lower conf. limits
+n = 30
+x=0:n
+sp=x/n
+m.err = 1.96*sqrt(sp*(1-sp)/n)
+lcl = sp - m.err
+ucl = sp + m.err
+                        # n+1 Upper conf. limits
+pp=.80
+prob = dbinom(x, n, pp)
+cover = (pp >= lcl) & (pp <= ucl)
+round(cbind(x, sp, lcl, ucl, prob, cover), 4) # 4-place printout sum(dbinom(x[cover], n, pp)) # total cov. prob. at pp
+
+```
+
+Example 1.6. Two Thousand Coverage Probabilities. To get a more compre- hensive view of the performance of confidence intervals based on formula (1.2), we step through two thousand values of π from near 0 to near 1. For each value of π, we go through a procedure like that shown in Example 1.5. Finally, we plot the coverage probabilities against π.
+
+
+```{r}
+n = 30
+alpha = .05;  k = qnorm(1-alpha/2)
+adj = 0
+x=0:n
+sp=(x+adj)/(n+2*adj) 
+m.err = k*sqrt(sp*(1 - sp)/(n + 2*adj))
+lcl = sp - m.err
+ucl = sp + m.err
+
+m = 2000
+pp = seq(1/n, 1 - 1/n, length=m)
+p.cov = numeric(m)
+for (i in 1:m)
+{
+# number of trials
+# conf level = 1-alpha
+# (2 for Agresti-Coull)
+     cover = (pp[i] >= lcl) & (pp[i] <= ucl)   #  1 if cover, else 0
+     p.rel = dbinom(x[cover], n, pp[i])        #  relevant probs.
+     p.cov[i] = sum(p.rel)                     #  total coverage prob.
+   }
+   plot(pp, p.cov, type="l", ylim=c(1-4*alpha,1))
+   lines(c(.01,.99), c(1-alpha,1-alpha))
+
+```
+
+
+## Generating Random Numbers
+
