@@ -178,4 +178,123 @@ for (i in 1:m)
 
 
 ## Generating Random Numbers
+r_i+1 = a*r_i + b (mod d),
 
+
+
+Example 2.1. As a “toy” illustration, suppose we want to shuffle the 52 cards in a standard deck. For convenience, number them 1, 2, 3, . . . , 52. Then consider the generator with a = 20, b = 0, d = 53, and s = 21. To obtain its first 60 numbers, we treat R simply as a programming language, using the following
+```{r}
+d = 53      # modulus
+a = 20      # multiplier
+b = 0       # shift
+s = 21      # seed
+m = 60      # length of run 
+r = numeric(m) 
+r[1] = s
+for (i in 1:(m-1)) {
+    r[i+1] = (a * r[i] + b) %% d
+}
+                # generates random integers
+r                # list of random integers generated
+```
+
+We set the d as 53 so that the algo can have the full period since there are 52 possible values coming out of the calculation. 
+
+
+Example 2.2. Here we consider a generator that is “pretty good,” but not really good enough for serious modern simulations. Let a = 1093, b = 18 257, d = 86 436, and s = 7. In elementary software applications, this generator has the advantage that the arithmetic involved never produces a number larger than 108 (see [PTVF92]).
+
+```{r}
+# Initialize
+a=1093
+b=18257 
+d=86436
+s=7 
+m = 1000
+r = numeric(m)
+r[1] = s
+   # Generate
+for (i in 1:(m-1)) {r[i+1] = (a*r[i] + b) %% d}
+u = (r + 1/2)/d
+# Display Results
+par(mfrow=c(1,2), pty="s")
+hist(u, breaks=10, col="wheat")
+abline(h=m/10, lty="dashed")
+u1 = u[1:(m-1)]; u2 = u[2:m]
+plot (u1, u2, pch=19)
+par(mfrow=c(1,1), pty="m")
+# values fit in (0,1)
+# 2 square panels in a plot
+# left panel
+# right panel
+# return to default
+```
+
+Example 2.3. Some years ago, IBM introduced a generator called RANDU for some of its mainframe computers. Essentially a multiplicative generator with a = 65539 and d = 231, it came to be very widely used. But over time it acquired a bad reputation. First, it was found to yield wrong Monte Carlo answers in some computations where the right answers were known by other means. Later, it was found to concentrate its values on a very few planes in 3-dimensional space. 
+
+```{r}
+a=65539; b=0; d=2^31; s=10 
+m = 20000; r = numeric(m); r[1] = s
+for (i in 1:(m-1)) {r[i+1] = (a*r[i] + b) %% d}
+   u = (r - 1/2)/(d - 1)
+   u1 = u[1:(m-2)]; u2 = u[2:(m-1)]; u3 = u[3:m]
+   par(mfrow=c(1,2), pty="s")
+     plot(u1, u2, pch=19, xlim=c(0,.1), ylim=c(0,.1))
+     plot(u1[u3 < .01], u2[u3 < .01], pch=19, xlim=c(0,1), ylim=c(0,1))
+   par(mfrow=c(1,1), pty="m")
+```
+
+runif 
+
+The Mersenne twister has period 219937 − 1 ≈ 4.32 × 106001, and it has been tested for good behavior in up to 623 consecutive dimensions. These distinct generated values are mapped into the roughly 4.31 billion numbers that can be expressed within the precision of R
+
+```{r}
+
+```
+
+
+
+2.4 Transformations of Uniform Random Variables
+
+```{r}
+# to simulate a roll of two fair dice
+# 1
+ceiling(runif(2, 0, 6))
+# 2 
+sample(1:6, 2, rep=T)
+
+
+```
+
+Example 2.4. The Square of a Uniform Random Variable. Let U ∼ UNIF(0, 1). We seek the distribution of X = U^2. The support of a continuous random variable is the part of the real line for which its density function is positive. So the support of U is the unit interval (0, 1). Because the square of a number in the unit interval is again in the unit interval, it seems clear that the support of X is also (0,1).
+```{r}
+# set.seed(1234)
+   m = 10000
+   u = runif(m);  x = u^2
+   xx = seq(0, 1, by=.001) # python np.linsaple
+   cut.u = (0:10)/10;  cut.x = cut.u^2
+   par(mfrow=c(1,2))
+     hist(u, breaks=cut.u, prob=T, ylim=c(0,10))
+       lines(xx, dunif(xx), col="blue")
+     hist(x, breaks=cut.x, prob=T, ylim=c(0,10))
+       lines(xx, .5*xx^-.5, col="blue")
+   par(mfrow=c(1,1))
+```
+
+The density function of X can be derived using an argument based on its cumulative distribution function (CDF). Recall that the CDF of U is given by FU (u) = P {U ≤ u} = u, for 0 < u < 1. Then, for 0 < x < 1, we have
+FX(x)=P{X ≤x}=P{U2 ≤x}=P{U ≤x1/2}=x1/2.
+
+Taking the derivative of this CDF to get the density function of X, we obtain fX(x) = 0.5x−0.5, which is plotted along with the histogram of simulated values of X in Figure 2.5. This is the density function of BETA(0.5, 1). 
+
+In Example 2.4, we have seen how to find the density function of a trans-
+formed standard uniform random variable. Now suppose we want to simulate
+random samples from a particular distribution. Then the question is how to
+find the transformation that will change a standard uniform distribution into
+the desired one. In Example 2.4, notice that the CDF of X ∼ BETA(0.5, 1) is
+FX(x) = x1/2, for 0 < x < 1, that the quantile function (inverse CDF) of X
+is x = F−1(u) = u2, and that X = F−1(U) = U2 is the transformation we XX
+used to generate X ∼ BETA(0.5, 1).
+
+
+This result for BETA(0.5, 1) is not a coincidence. In general, if FY is the
+CDF of a continuous random variable, then F −1 (U ) has the distribution of Y . Y
+This is called the quantile transformation method of simulating a distri- bution.

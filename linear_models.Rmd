@@ -1,0 +1,167 @@
+---
+title: "linear_model"
+author: "Jerome"
+date: "1/24/2021"
+output: html_document
+---
+
+# http://rebeccaferrell.github.io/CSSS508/Homework/template-HW4-key.html
+
+
+# linear models 
+```{r}
+set.seed(1234)
+n <- 2000 # number of UW calc I students
+
+# simulate high school math GPA
+hs_math_gpa <- rnorm(n, mean = 3.5, sd = 0.5)
+# truncate to 2.0-4.0
+hs_math_gpa <- ifelse(hs_math_gpa < 2.0, 2.0,
+                      ifelse(hs_math_gpa > 4.0, 4.0, hs_math_gpa))
+
+# simulate previous calculus in high school:
+# - 75% of people with HS math GPAs over 3.6 took HS calculus
+# - 40% of people with HS math GPAs under 3.6 took HS calculus
+# binomial data with 1 trial per student, probabilities as above
+hs_calculus <- rbinom(n, size = 1,
+                      p = ifelse(hs_math_gpa >= 3.6, 0.75, 0.40))
+
+# simulate precalculus at UW:
+# - if no high school calculus, 70% take precalculus, regardless of grade
+# - if high school calculus, 60% take precalculus if HS grade < 3.5,
+#   and 25% otherwise
+uw_precalc <- rbinom(n, size = 1,
+                     p = ifelse(hs_calculus == 0, 0.70,
+                                ifelse(hs_math_gpa < 3.5, 0.60, 0.25)))
+```
+
+```{r}
+true_beta <- c("Intercept" = 0.3,
+               "hs_math_gpa" = 0.7,
+               "hs_calculus" = 0.3,
+               "uw_precalc" = 0.1)
+true_sigma <- 0.5
+uw_calculus_gpa <- true_beta["Intercept"] +
+    true_beta["hs_math_gpa"] * hs_math_gpa +
+    true_beta["hs_calculus"] * hs_calculus +
+    true_beta["uw_precalc"] * uw_precalc +
+    rnorm(n, mean = 0, sd = true_sigma)
+# we don't see exact GPAs, just nearest 0.1
+uw_calculus_gpa <- round(uw_calculus_gpa, 1)
+# truncate under 0.7 or over 4.0
+uw_calculus_gpa <- ifelse(uw_calculus_gpa > 4.0, 4.0,
+                          ifelse(uw_calculus_gpa < 0.0, 0.0,
+                                 ifelse(uw_calculus_gpa < 0.7, 0.7,
+                                        uw_calculus_gpa)))
+```
+
+```{r}
+calculus_data <- data.frame(uw_calculus_gpa, hs_math_gpa, hs_calculus, uw_precalc)
+head(calculus_data)
+```
+
+```{r}
+# this uses the lm function seen in Week 1
+calculus_lm <- lm(uw_calculus_gpa ~ hs_math_gpa + hs_calculus + uw_precalc,
+                  data = calculus_data) 
+summary(calculus_lm)
+```
+
+```{r}
+# to make X, just cbind the variables together in the same
+# order as the independent variables in the regression
+# (so everthing matches up)
+X <- cbind(1, hs_math_gpa, hs_calculus, uw_precalc)
+# the colnames for the existing variables are already okay
+# but I still want to name the intercept column
+colnames(X)[1] <- "Intercept"
+colnames(X)
+```
+
+```{r}
+y <- uw_calculus_gpa
+
+
+# t(X) is the transponse, %*% is matrix multiplication,
+# solve takes the inverse
+A <- solve(t(X) %*% X)
+# alternative solution: crossprod does the same thing
+A <- solve(crossprod(X))
+
+# this comes from looking at formula for beta hat and
+# multiplying the additional terms needed
+beta <- A %*% t(X) %*% y
+
+# just filling in formula as above
+residuals <- y - X %*% beta
+
+
+p <- ncol(X) - 1
+
+residual_var <- t(residuals) %*% residuals / (n - p - 1)
+residual_var <- as.numeric(residual_var)
+
+# alternative calculation # 1:
+residual_var <- crossprod(residuals) / (n - p - 1)
+residual_var <- as.numeric(residual_var)
+
+# alternative calculation # 2:
+residual_var <- sum(residuals^2) / (n - p - 1)
+
+
+```
+
+
+```{r}
+head(beta)
+```
+
+
+```{r}
+
+# covariance matrix of estimated regression coefficients
+# is just the estimated residual variance times solve(t(X) %*% X)
+# we calculuted earlier and stored as A
+beta_covar <- residual_var * A
+
+
+# diag takes the diagonal of the matrix, sqrt makes it go
+# from variance to standard deviation
+beta_SE <- sqrt(diag(beta_covar))
+```
+
+
+# comparison 
+```{r}
+# true covariance uses same formula as estimated covariance
+# except we plug in the true variance. we have the true std deviation
+# so we square that
+library(pander)
+true_covar <- true_sigma^2 * A
+true_SE <- sqrt(diag(true_covar))
+SE_compare <- cbind(true_SE,
+                    beta_SE,
+                    summary(calculus_lm)[["coefficients"]][, "Std. Error"])
+colnames(SE_compare) <- c("Truth", "Manual", "lm")
+pander(SE_compare, caption = "Comparison of standard errors of linear regression parameters estimated manually with those from R's lm().")
+```
+
+```{r}
+resid_var_compare <- cbind(true_sigma^2,
+                           residual_var,
+                           summary(calculus_lm)[["sigma"]]^2)
+colnames(resid_var_compare) <- c("Truth", "Manual", "lm")
+pander(resid_var_compare, caption = "Comparison of residual variances of manual linear regression with that from R's lm().")
+```
+
+# significance 
+```{r}
+t_stat = beta/beta_SE
+head(t_stat)
+```
+
+# 
+```{r}
+pt(t_stat, df = (n - p - 1), lower.tail = F)*2
+```
+

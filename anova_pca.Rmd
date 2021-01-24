@@ -1,0 +1,259 @@
+---
+title: "anova"
+author: "Jerome"
+date: "1/10/2021"
+output: html_document
+---
+
+```{r}
+library(MASS)
+library(ggplot2)
+data(Cushings)
+data(genotype)
+```
+
+```{r}
+head(Cushings)
+```
+```{r}
+ggplot(Cushings, aes(x = Type, y = Pregnanetriol)) + geom_boxplot()
+ggplot(Cushings, aes(x = Type, y = Tetrahydrocortisone)) + geom_boxplot()
+
+```
+
+```{r}
+ggplot(Cushings, aes(x = Type, y = Pregnanetriol)) + geom_point()
+
+```
+
+```{r}
+ggplot(Cushings, aes(x = Type, y = Pregnanetriol)) + geom_line()
+
+```
+```{r}
+mod_p = aov(Pregnanetriol ~ Type, data = Cushings)
+summary(mod_p)
+```
+
+```{r}
+mod_t = aov(Tetrahydrocortisone ~ Type, data = Cushings)
+summary(mod_t)
+```
+
+
+## two-way ANOVA
+```{r}
+head(genotype)
+```
+
+```{r}
+mod_g = aov(Wt ~ Litter + Mother + Litter*Mother, data = genotype)
+summary(mod_g)
+```
+
+# chisq test 
+
+```{r}
+chisq.test(x = c(24, 16), p = c(0.7, 0.3))
+chisq.test(x = c(13, 11, 16), p = c(0.5, 0.2, 0.3))
+```
+
+```{r}
+data(birthwt)
+head(birthwt)
+birthwt.tab <- table(birthwt$smoke, birthwt$low)
+```
+
+```{r}
+chisq.test(birthwt.tab, correct = FALSE)
+```
+
+```{r}
+chisq.test(birthwt.tab, correct = TRUE)
+
+```
+
+
+# 
+```{r}
+# plot the distribution 
+plot(0:12, dbinom(0:12, size = 100, prob = 0.05))
+```
+```{r}
+sum(dbinom(0:12, size = 100, prob = 0.05))
+```
+
+
+# 
+```{r}
+E_opt1 = ((20^3 - 40) * 2 + (20^3 - 20) * 2 + 2 * 60)/20^5
+E_opt1
+```
+
+
+# distribution 
+```{r}
+
+```
+
+
+#
+```{r}
+feb_list <- list()
+
+febonacci <- function(n) {
+    
+    if (n == 0) {
+        feb_list[n] <<- 0
+        return(0)
+    } else if (n == 1 | n == 2) {
+        feb_list[n] <<- 1
+        return(1)
+    } else {
+        if (n %in% names(feb_list)) {
+            return(feb_list[n])
+        } else {
+            num <- febonacci(n - 2) + febonacci(n - 1)
+            feb_list[n] <<- num
+            return(num)
+        }
+        
+    }
+    
+}
+
+febonacci_iter <- function(n) {
+    pre_val = 0 
+    cur_val = 1
+    for (i in 1:(n - 1)) {
+        tmp_val = pre_val + cur_val
+        pre_val = cur_val
+        cur_val = tmp_val
+        
+    }
+    return(tmp_val)
+}
+    
+
+for (i in 1:200) {
+    print(i)
+    temp <- febonacci(i)
+}
+p_k_head <- function(k, n) {
+    sum_val <- 0
+    for (i in 1:k) {
+        sum_val <- sum_val + febonacci_iter(n + 2 - i)
+    }
+    print(sum_val)
+    return(2^(log2(sum_val) - 100))
+}
+E_opt2 = 
+```
+
+
+```{r}
+n_sim = 100000
+sim_mtx = matrix(0, n_sim, 100)
+for (i in 1:n_sim) {
+    sim_mtx[i, ]  = rbinom(100, size = 1, 0.05)
+    
+}
+
+count_vec = rep(0, n_sim)
+for (i in 1:n_sim) {
+    sum_val = 0
+    for (j in 2:100) {
+        if (sim_mtx[i, j - 1] == 1 & sim_mtx[i, j] == 1) {
+            sum_val = sum_val + 1
+        }
+    }
+    count_vec[i] = sum_val
+}
+```
+
+# sample size calculation 
+
+```{r}
+sample_size <- function(baseline, dmin) {
+    p_bar <- baseline + dmin/2
+    se <- sqrt(p_bar*(1-p_bar))
+    return(((qnorm(0.975)*se + qnorm(0.8) * se)/(dmin) *sqrt(2))^2)
+
+}
+
+((qnorm(0.975)* sqrt(0.205*0.795) + qnorm(0.8) * sqrt(0.205*0.795))/(0.01) *sqrt(2))^2
+```
+
+```{r}
+n_sim = 500000
+ct = 0
+for (i in 1:n_sim) {
+    sample_30 <- sample(1:50, 30)
+    j = 1
+    while (j < 30) {
+        test_sam = sample_30[j:(j+2)]
+        j = j + 3
+        if (sum(test_sam) == 6) { ct = ct + 1}
+    }
+    
+}
+
+```
+
+# pca
+```{r}
+library("factoextra")
+```
+
+```{r}
+data(decathlon2)
+decathlon2.active <- decathlon2[1:23, 1:10]
+head(decathlon2.active[, 1:6])
+```
+
+```{r}
+res.pca <- prcomp(decathlon2.active, scale = FALSE)
+res.pca_scaled <- prcomp(decathlon2.active, scale = TRUE)
+
+res.pca_2 <- princomp(x, cor = FALSE, scores = TRUE)
+mtx <- decathlon2.active
+mtx_std <- apply(mtx, 2, scale)
+mtx_center <- apply(mtx, 2, function(x) x-mean(x))
+test_cor_mtx <- t(mtx_std) %*% mtx_std/(nrow(mtx_std) - 1)
+test_cov_mtx <- t(mtx_center) %*% mtx_center/(nrow(mtx_std) - 1)
+
+cov_mtx <- cov(as.matrix(decathlon2.active))
+cor_mtx <- cor(as.matrix(decathlon2.active))
+eigen_res <- eigen(x = t(as.matrix(decathlon2.active))%*%as.matrix(decathlon2.active)/(nrow(decathlon2.active) - 1))
+```
+
+```{r}
+res_pca <- as.matrix(decathlon2.active) %*% eigen_res$vectors
+norm <- function(vector) {
+    sum_tmp <- sqrt(sum(vector^2))
+    return(vector/sum_tmp)
+}
+
+res_pca_updated <- apply(res_pca, 2, function(x) norm(x))
+
+```
+
+# by hand without scale 
+```{r}
+Eigenvalues <- eigen(cov(as.matrix(mtx_center)))$values
+Eigenvectors <- eigen(cov(as.matrix(mtx_center)))$vectors
+PCs <-   as.matrix(mtx_center) %*% Eigenvectors
+
+
+
+```
+
+# by hand scaling
+```{r}
+Eigenvalues <- eigen(cov(as.matrix(mtx_std)))$values
+Eigenvectors <- eigen(cov(as.matrix(mtx_std)))$vectors
+PCs <-  as.matrix(mtx_std) %*% Eigenvectors
+
+
+```
+
