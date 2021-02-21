@@ -21,6 +21,8 @@ y_pred_2 <- predict(mod2, newdata = data.frame(x3, x4))
 cor(y_pred, y)
 cor(y_pred_2, y)
 ```
+# 
+
 
 ```{r}
 x_mtx = as.matrix(data.frame(x1= x1, x2 = x2))
