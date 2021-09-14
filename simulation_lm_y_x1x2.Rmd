@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r}
+set.seed(7)
 x1 <- rnorm(150)
 x2 <- rnorm(150, mean = x1)
 y <- rnorm(150)
@@ -21,7 +22,75 @@ y_pred_2 <- predict(mod2, newdata = data.frame(x3, x4))
 cor(y_pred, y)
 cor(y_pred_2, y)
 ```
-# 
+
+# coef
+```{r}
+summary(mod1)$coef
+summary(mod2)$coef
+
+```
+
+# by hand correlation
+```{r}
+1/(length(y_pred) - 1) * ((y_pred - mean(y_pred)) %*% (y - mean(y)))/(sd(y_pred) * sd(y))
+
+```
+
+```{r}
+num = (y_pred - mean(y_pred)) %*% (y - mean(y))
+dem = sqrt(sum((y_pred - mean(y_pred))^2) * sum((y - mean(y))^2))
+r = num/dem
+r
+
+```
+
+# R squared 
+```{r}
+summary(mod1)$r.squared
+summary(mod2)$r.squared
+```
+
+# by hand first 
+```{r}
+cor(y_pred, y)^2
+cor(y_pred_2, y)^2
+
+```
+
+
+
+# the results showed that the relationship of R2 and correlation 
+```{r}
+
+TSS = sum((y - mean(y))^2)
+RSS = sum((y - y_pred)^2 )
+SS = sum(y_pred - mean(y_pred)^2)
+R2 = 1 - RSS/TSS 
+R2
+```
+
+```{r}
+TSS = sum(y^2)
+RSS = sum((y - y_pred_updated)^2 )
+R2 = 1 - RSS/TSS 
+R2
+```
+
+```{r}
+
+y_pred_updated = matrix(c(x1, x2), ncol = 2) %*% summary(mod1)$coef[,1]
+cor(y_pred, y)^2
+cor(y_pred_updated, y)^2
+
+y_pred_updated = round(matrix(c(x1, x2), ncol = 2), 5) %*% summary(mod1)$coef[,1]
+cor(y_pred, y)^2
+cor(y_pred_updated, round(y, 5))^2
+```
+
+# no intercept  
+```{r}
+https://stats.stackexchange.com/questions/26176/removal-of-statistically-significant-intercept-term-increases-r2-in-linear-mo/26205#26205
+```
 
 
 ```{r}
@@ -54,5 +123,28 @@ x_mtx = as.matrix(data.frame(x1= x1, x2 = x2))
 t(x_mtx) %*% x_mtx
 solve(t(x_mtx) %*% x_mtx) %*% t(x_mtx) %*% y 
 #x_mtx %*% solve(t(x_mtx) %*% x_mtx) %*% t(x_mtx) 
+```
+
+# add a highly correlated feature
+```{r}
+set.seed(10)
+x1 <- rnorm(150)
+x2 <- rnorm(150, mean = x1)
+y <- rnorm(150)
+mod1 <- lm(y ~ x1 + x2 -1 )
+y_pred <- predict(mod1, newdata = data.frame(x1, x2))
+
+x3 = rnorm(n = length(x1), mean = x1)
+mod2 <- lm(y ~ x1 + x2 + x3 - 1)
+y_pred_2 <- predict(mod2, newdata = data.frame(x3, x4))
+
+cor(y_pred, y)
+cor(y_pred_2, y)
+```
+
+```{r}
+summary(mod1)$coef
+summary(mod2)$coef
+
 ```
 

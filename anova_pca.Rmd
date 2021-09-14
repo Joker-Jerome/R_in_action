@@ -377,3 +377,79 @@ Eigenvalues/sum(Eigenvalues) * 100
 
 ```
 
+# arima 
+```{r}
+library(stringr)
+library(astsa)
+
+xerie = as.numeric(unlist(strsplit('14.383   14.649   13.416   14.288   12.201   14.307   13.586   14.592   16.660   15.332   12.884   12.296   12.201   10.873   11.290   12.049   13.435   14.137   13.852   14.213   12.562   14.801   16.812   15.427   17.268   15.427   16.869   15.712   14.080   15.408   16.471   17.268   16.679   17.116   16.357   15.863   14.991   13.776   13.890   15.787', split = "   ")))
+
+
+#reads the data
+xerie = ts (xerie) # makes sure xerie is a time series object
+plot (xerie, type = "b") # plots xerie
+acf2 (xerie) # author’s routine for graphing both the ACF and the PACF
+sarima (xerie, 1, 0, 0) # this is the AR(1) model estimated with the author’s routine
+sarima (xerie, 0, 0, 1) # this is the incorrect MA(1) model
+sarima (xerie, 1, 0, 1) # this is the over-parameterized ARMA(1,1) model 
+```
+
+```{r}
+sarima.for(xerie, 1, 0, 1, 0) # this is the over-parameterized ARMA(1,1) model 
+
+```
+```{r}
+sarima.for(xerie, 5, 0, 1, 0) # this is the over-parameterized ARMA(1,1) model 
+
+```
+
+
+# patient simulation 
+```{r}
+n = 100 
+time_vec = rpois(n, 10)
+
+
+MeanWaitingTimeSim <- function(arrivalTime, serviceTime) {
+  waitingTime <- rep(NA, 100)
+  leavingTime <- rep(NA, 100)
+
+  waitingTime[1] <- 0
+  leavingTime[1] <- arrivalTime[1] + waitingTime[1] + serviceTime[1]
+
+  for (i in 2:100)
+  {
+    waitingTime[i] <- max(0, leavingTime[i - 1] - arrivalTime[i])
+    leavingTime[i] <- arrivalTime[i] + waitingTime[i] + serviceTime[i]
+  }
+  return(list(waitingTime=waitingTime, leavingTime=leavingTime))
+}
+
+simulatePatient <- function(n) {
+    mtx = matrix(NA, n, 4)
+    for (i in 1:n) {
+        # check progree
+        if (i %% 100 == 0) {
+            print(paste0("INFO: sample ", i))
+        }
+        arrivalTime <- cumsum(rexp(150, 1/6))
+        serviceTime <- runif(150, 5, 20)
+        simulate_list <- MeanWaitingTimeSim(arrivalTime, serviceTime)
+        waitingTime = simulate_list$waitingTime 
+        leavingTime = simulate_list$leavingTime
+        num_patients = sum(arrivalTime < 60 * (16-9))
+        num_waiting = sum(waitingTime[1:num_patients] != 0)
+        mean_waittime = mean(waitingTime[1:num_patients]) 
+        close_time = leavingTime[num_patients]
+        mtx[i, ] = c(num_patients, num_waiting, mean_waittime, close_time)
+        
+    }
+    return(mtx)
+}
+
+patient_mtx = simulatePatient(1000)
+
+# results 
+apply(patient_mtx, 2, mean)
+```
+

@@ -111,6 +111,14 @@ residual_var <- sum(residuals^2) / (n - p - 1)
 
 ```
 
+```{r}
+f_stat = (sum((y - mean(y))^2) - sum(residuals^2))/ (p ) / (sum(residuals^2)/(n-p-1))
+pf(f_stat, df1 = 3, df2 = 1996 )
+# significance 
+pf(f_stat, df1 = 3, df2 = 1996, lower.tail = F )
+```
+
+
 
 ```{r}
 head(beta)
@@ -285,6 +293,10 @@ p_raw = pnorm(coef/se, lower.tail = F)
 summary(M1)$coef[,4]
 
 
+
+```
+
+```{r}
 
 ```
 

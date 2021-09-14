@@ -40,3 +40,37 @@ data.frame(
 car::vif(model1)
 ```
 
+
+```{r}
+RSS = 3:10 #Right shoe size
+LSS = rnorm(RSS, RSS, 0.1) #Left shoe size - similar to RSS
+cor(LSS, RSS) #correlation ~ 0.99
+
+weights = 120 + rnorm(RSS, 10*RSS, 10)
+
+##Fit a joint model
+m = lm(weights ~ LSS + RSS)
+
+##F-value is very small, but neither LSS or RSS are significant
+summary(m)
+
+##Fitting RSS or LSS separately gives a significant result. 
+summary(lm(weights ~ LSS))
+
+```
+
+```{r}
+data=rbind(
+cbind(1,1:400),
+cbind(2,200:400),
+cbind(3,300:400))
+plot(data)
+
+```
+```{r}
+fit=lm(data[,2]~data[,1])
+summary(fit)
+plot(data)
+abline(fit)
+```
+
