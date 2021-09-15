@@ -1,0 +1,27 @@
+---
+title: "sample_size_ct"
+author: "Jerome"
+date: "8/31/2021"
+output: html_document
+---
+
+```{r}
+
+library(ggplot2)
+
+
+diff_vec = seq(0.8, 2, 0.1)
+sd = 1
+alpha = 0.05
+beta = 0.8
+sample_size_vec = 2*(qnorm(1-alpha/2) + qnorm(beta))^2 / (diff_vec/sd)^2
+
+plot_df = data.frame(effect_size = diff_vec/sd, sample_size = sample_size_vec)
+ggplot(plot_df, aes(x=effect_size, y=sample_size)) + 
+    geom_line() + 
+    theme_bw() + 
+    theme(text = element_text(size=16)) #+ 
+    #theme_bw()
+
+```
+
