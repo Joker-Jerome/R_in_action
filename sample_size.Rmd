@@ -24,4 +24,62 @@ ggplot(plot_df, aes(x=effect_size, y=sample_size)) +
     #theme_bw()
 
 ```
+```{r}
+diff_vec = 0.01
+p = 0.08
+sd = sqrt(p*(1-p))
+alpha = 0.05
+beta = 0.8
+sample_size_vec = 2*(qnorm(1-alpha/2) + qnorm(beta))^2 / (diff_vec/sd)^2
+sample_size_vec
+```
+
+```{r}
+diff_vec = 0.01
+p = 0.206
+sd = sqrt(p*(1-p))
+alpha = 0.05
+beta = 0.8
+sample_size_vec = 2*(qnorm(1-alpha/2) + qnorm(beta))^2 / (diff_vec/sd)^2
+sample_size_vec
+```
+
+```{r}
+diff_vec = 0.01
+p = 0.53
+sd = sqrt(p*(1-p))
+alpha = 0.05
+beta = 0.8
+sample_size_vec = 2*(qnorm(1-alpha/2) + qnorm(beta))^2 / (diff_vec/sd)^2
+sample_size_vec
+```
+
+```{r}
+diff_vec = 0.0075
+p = 0.1093
+sd = sqrt(p*(1-p))
+alpha = 0.05
+beta = 0.8
+sample_size_vec = 2*(qnorm(1-alpha/2) + qnorm(beta))^2 / (diff_vec/sd)^2
+sample_size_vec
+```
+
+# pdf estimate 
+```{r}
+x_vec = rnorm(5000)
+x_sorted = sort(x_vec)
+n = length(x_vec)
+pdf = unlist(sapply(x_vec, function(x) sum(x > x_vec)/n))
+
+# kernel estimation
+kde = function(x, x_vec, h) {
+    n = length(x_vec)
+    fx = 1/(n*h) * sum(dnorm((x-x_vec)/h))
+    return(fx)
+    
+        
+}
+
+
+```
 

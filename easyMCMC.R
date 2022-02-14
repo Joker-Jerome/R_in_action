@@ -1,3 +1,11 @@
+target = function(x){
+  if(x<0){
+    return(0)}
+  else {
+    return( exp(-x))
+  }
+}
+
 easyMCMC = function(niter, startval, proposalsd){
   x = rep(0,niter)
   x[1] = startval     

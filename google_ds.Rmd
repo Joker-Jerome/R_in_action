@@ -1,0 +1,322 @@
+---
+title: "google_ds"
+author: "Jerome"
+date: "8/26/2021"
+output: html_document
+---
+
+# ad bidder  
+```{r}
+set.seed(7)
+x = runif(1000)
+y = runif(1000)
+rev = pmin(x, y)
+mean(rev)
+
+```
+
+
+# ad bidder II
+```{r}
+set.seed(7)
+x = runif(1000)
+y = runif(1000)
+z = runif(1000)
+df = data.frame(x, y, z)
+rev = apply(df, 1, function(x) sort(x)[2])
+mean(rev)
+
+```
+
+
+```{r}
+# p wrong 
+p = 0.2
+(1 - p)^1200 
+(1 - (1 - p)^3)^400 
+
+log((1 - p)^1200 )
+log((1 - (1 - p)^3)^400 )
+
+```
+
+
+```{r}
+term_a <- function(i, n, p) {
+    c = choose(n, i)
+    return(log(c) + log(p^i) + log( (1-p)^(n-i)))
+}
+
+#p_a = sapply(60:120, function(x) term_a(x, 120, 0.1))
+#p_b = sapply(20:40, function(x) term_a(x, 40, 0.1))
+
+p_a = sapply(600:1200, function(x) term_a(x, 1200, 0.1))
+p_b = sapply(200:400, function(x) term_a(x, 400, 0.1))
+```
+
+# linear models 
+```{r}
+data(cars)
+head(cars)
+
+
+
+```
+
+```{r}
+scatter.smooth(x=cars$speed, y=cars$dist, main="Dist ~ Speed")  # scatterplot
+```
+```{r}
+par(mfrow=c(1, 2))  # divide graph area in 2 columns
+
+boxplot(cars$speed, main="Speed", sub=paste("Outlier rows: ", boxplot.stats(cars$speed)$out))  # box plot for 'speed'
+
+boxplot(cars$dist, main="Distance", sub=paste("Outlier rows: ", boxplot.stats(cars$dist)$out))  # box plot for 'distance'
+```
+```{r}
+cor(cars$speed, cars$dist)
+```
+
+```{r}
+mod = lm(dist~speed, data = cars)
+mod
+```
+
+```{r}
+plot(mod)
+```
+
+```{r}
+data(mtcars)
+head(mtcars)
+dim(mtcars)
+```
+
+
+```{r}
+mod = lm(mpg ~., data = mtcars)
+
+```
+32 - 10 - 1 = 21
+
+# inverse cdf 
+
+
+# kernel estimate 
+```{r}
+
+```
+
+# M-H algorithms 
+```{r}
+target = function(x){
+  if(x<0){
+    return(0)}
+  else {
+    return( exp(-x))
+  }
+}
+
+x = rep(0,1000)
+x[1] = 3     #this is just a starting value, which I've set arbitrarily to 3
+for(i in 2:1000){
+  currentx = x[i-1]
+  proposedx = currentx + rnorm(1,mean=0,sd=1)
+  A = target(proposedx)/target(currentx) 
+  if(runif(1)<A){
+    x[i] = proposedx       # accept move with probabily min(1,A)
+  } else {
+    x[i] = currentx        # otherwise "reject" move, and stay where we are
+  }
+}
+
+
+
+easyMCMC = function(niter, startval, proposalsd){
+  x = rep(0,niter)
+  x[1] = startval     
+  for(i in 2:niter){
+    currentx = x[i-1]
+    proposedx = rnorm(1,mean=currentx,sd=proposalsd) 
+    A = target(proposedx)/target(currentx)
+    if(runif(1)<A){
+      x[i] = proposedx       # accept move with probabily min(1,A)
+    } else {
+      x[i] = currentx        # otherwise "reject" move, and stay where we are
+    }
+  }
+  return(x)
+}
+
+
+pdf_target = function(x) {
+    return(dnorm(x))
+}
+
+
+n_iter = 1000
+res = rep(NA, n_iter)
+
+x_cur = 0
+res[1] = x_cur 
+for (i in 2:n_iter) {
+    x_cur = res[i-1]
+    p_cur = pdf_target(x_cur)
+    x_propose = rnorm(1, mean=x_cur, sd = 3)
+    p_propose = pdf_target(x_propose)
+    a = p_propose/p_cur
+    if (a > runif(1)) {
+        res[i] = x_propose 
+    } else {
+        res[i] = x_cur
+    }
+}
+
+
+```
+
+
+# poisson 
+
+```{r}
+
+p_vec = runif(100)
+lambda = 5
+x_vec = log(1-p_vec)/-lambda
+time_vec = c()
+val = 0
+for (i in 1:length(x_vec)) {
+    val = val + x_vec[i]
+    time_vec = c(time_vec, val)
+}
+
+```
+
+
+```{r}
+
+n_sample = 1000 
+count_vec = c()
+
+for (i in 1:n_sample ) {
+    p_vec = runif(100)
+    lambda = 5
+    x_vec = log(1-p_vec)/-lambda
+    time_vec = c()
+    val = 0
+    for (i in 1:length(x_vec)) {
+        val = val + x_vec[i]
+        time_vec = c(time_vec, val)
+    }
+    count_vec = c(count_vec, sum(time_vec < 1))
+    
+}
+
+```
+
+```{r}
+p = 0.2
+p_prime= 3*p^2 - 2*p^3
+p_a = sum(unlist(sapply(7:12, function(x) choose(12, x) * p^x * (1-p)^(12-x))))
+p_b = sum(unlist(sapply(3:4, function(x) choose(4, x) * p_prime^x * (1-p_prime)^(4-x))))
+p_a
+p_b
+          
+```
+
+```{r}
+p = 0.1
+p_prime= 3*p^2 - 2*p^3
+p_a = sum(unlist(sapply(61:120, function(x) choose(120, x) * p^x * (1-p)^(120-x))))
+p_b = sum(unlist(sapply(21:40, function(x) choose(40, x) * p_prime^x * (1-p_prime)^(40-x))))
+p_a
+p_b
+```
+```{r}
+p = 0.1
+p_prime= 3*p^2 - 2*p^3
+p_a = sum(unlist(sapply(60:120, function(x) choose(120, x) * p^x * (1-p)^(120-x))))
+p_b = sum(unlist(sapply(20:40, function(x) choose(40, x) * p_prime^x * (1-p_prime)^(40-x))))
+p_a
+p_b
+```
+
+
+```{r}
+p = 0.01
+p_prime= 3*p^2 - 2*p^3
+p_a = sum(unlist(sapply(61:120, function(x) choose(120, x) * p^x * (1-p)^(120-x))))
+p_b = sum(unlist(sapply(21:40, function(x) choose(40, x) * p_prime^x * (1-p_prime)^(40-x))))
+p_a
+p_b
+```
+
+
+```{r}
+p = 0.1
+p_prime= 3*p^2 - 2*p^3
+p_a = sum(unlist(sapply(601:1200, function(x) choose(1200, x) * p^x * (1-p)^(1200-x))))
+p_b = sum(unlist(sapply(201:400, function(x) choose(400, x) * p_prime^x * (1-p_prime)^(400-x))))
+p_a
+p_b
+```
+
+```{r}
+# fix the coefficient of determination
+R2 <- 0.2
+
+# simulate x and y variables
+n <- 100 # sample size
+x <- rnorm(n, 0, 1)
+ssr <- sum((x-mean(x))^2) # sum of squared residuals
+e <- rnorm(n)
+e <- resid(lm(e ~ x))
+e <- e*sqrt((1-R2)/R2*ssr/(sum(e^2)))
+y <- x + e
+
+
+# check if R2 has the right value
+summary(lm(y ~ x)) 
+```
+
+
+```{r}
+R2 = 0.2
+beta = 2
+x_vec = rnorm(10000)
+y_var = beta^2 * var(x_vec)
+e_var = (1-R2)/R2 * y_var
+
+y_vec = x_vec * beta + rnorm(10000, 0, sd = sqrt(e_var))
+summary(lm(y_vec ~ x_vec))
+```
+
+
+```{r}
+x_vec = sqrt(seq(1, 100))
+sum(x_vec[seq(1, 99, 2)])
+
+```
+
+
+```{r}
+r2 = 0.2
+beta = 5
+
+
+x = rnorm(1000)
+y = rnorm(1000)
+x =  x- lm(x~y)$fitted
+
+#x <- apply(x, 2, function(i) i/sd(i))
+x = x/sd(x)
+x_n <- x + outer(y/sd(y),sqrt(r2/(1-r2)))
+lm(y~x_n)
+
+
+x_n = x_n * lm(y ~ x_n)$coef[-1]/beta
+summary(lm(y~x_n))
+
+
+```
+

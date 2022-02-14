@@ -298,3 +298,22 @@ used to generate X ∼ BETA(0.5, 1).
 This result for BETA(0.5, 1) is not a coincidence. In general, if FY is the
 CDF of a continuous random variable, then F −1 (U ) has the distribution of Y . Y
 This is called the quantile transformation method of simulating a distri- bution.
+
+
+
+```{r}
+
+sum_vec = rep(NA, 100) 
+for (x in 1:100) {
+  n_sample = 100
+  vec = rep(NA, n_sample)
+  for (i in 1:n_sample) {
+    vec[i] = sum(sample(c(1,2,3,4,5,6), 100, replace = T))
+  }
+  sum_vec[x] = var(vec)
+}
+  
+
+
+```
+

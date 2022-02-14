@@ -1,0 +1,431 @@
+---
+title: "causal_inference"
+author: "Jerome"
+date: "10/12/2021"
+output: html_document
+---
+
+
+# Difference in Differences
+
+Minimum wages and employment: A case study of the fast food industry in New Jersey and Pennsylvania (Card and Krueger 1994)
+“On April 1, 1992, New Jersey’s minimum wage rose from $4.25 to $5.05 per hour. To evaluate the impact of the law we surveyed 410 fast-food restaurants in New Jersey and eastern Pennsylvania before and after the rise. Comparisons of employment growth at stores in New Jersey and Pennsylvania (where the minimum wage was constant) provide simple estimates of the effect of the higher minimum wage. We also compare employment changes at stores in New Jersey that were initially paying high wages (above $5) to the changes at lower-wage stores. We find no indication that the rise in the minimum wage reduced employment.”
+Comment (Neumark and Wascher 2000)
+Reconciling the evidence of Card and Krueger (1994) and Neumark and Wascher (2000) (Ropponen 2011)
+Another summary here.
+Treatment: Change in minimum wage (4.25 to 5.05) on April 1, 1992 (in New Jersey)
+Outcome: Employment
+Identification strategy: Difference-in-differences
+For me this study is also a prime example in terms of presenting results (published 1994!)
+
+The data data-difference-in-differences.csv is based on the original data provided by Card and Krueger (1994). The original data public.dat and can be downloaded at the MHE Data Archive and there are some R reproduction files provides by Ropponen (2011). Variables have been renamed to decrease cognitive load. Rows are 410 fast-food restaurants in New Jersey and eastern Pennsylvania, interviewed in February/March 1992 and November/December 1992 (see Card and Krueger 1994, Tab. 1, p. 774). The table below provides summary statistics. Analogue to our theoretical sessions treatment variables are generally named d_..., outcome variables y_... and covariates x_....
+
+Below variables that are in the example dataset (I renamed them for convenience).
+
+y_ft_employment_before: Full time equivalent employment before treatment [Outcome]
+y_ft_employment_after: Full time equivalent employment after treatment [Outcome]
+d_nj: 1 if New Jersey; 0 if Pennsylvania (treatment variable) [Treatment]
+x_co_owned: If owned by company = 1
+x_southern_nj: If in southern NJ = 1
+x_central_nj: If if in central NJ = 1
+x_northeast_philadelphia: If in Pennsylvania, northeast suburbs of Philadelphia = 1
+x_easton_philadelphia: If in Pennsylvania, Easton = 1
+x_st_wage_before: Starting wage ($/hr) before treatment
+x_st_wage_after: Starting wage ($/hr) after treatment
+x_burgerking: If Burgerking = 1
+x_kfc: If KFC = 1
+x_roys: If Roys = 1
+x_wendys: If Wendys = 1
+x_closed_permanently: Closed permanently after treatment
+
+```{r}
+library(stargazer)
+# Directly import data from shared google folder into R
+  data <- readr::read_csv("https://docs.google.com/uc?id=10h_5og14wbNHU-lapQaS1W6SBdzI7W6Z&export=download")
+  # Or download and import: data <- readr::read_csv("data-difference-in-differences.csv")
+stargazer(data.frame(data), type = "latex", summary = TRUE) #out = "./www/public.html")
+```
+
+
+```{r}
+library(plotly)
+#FIGURE 1
+  x_st_wage_before_nj <- 
+  data$x_st_wage_before[data$d_nj == 1]
+  x_st_wage_before_pa <- 
+    data$x_st_wage_before[data$d_pa == 1]
+
+# Make a stacked bar plot - Plotly
+# Set histogram bins
+  xbins <- list(start=4.20, end=5.60, size=0.1)
+  
+# Plotly histogram  
+  p <- plot_ly(alpha = 0.6) %>%
+    add_histogram(x = x_st_wage_before_nj, 
+                  xbins = xbins,
+                  histnorm = "percent", 
+                  name = "Wage Before (New Jersey)") %>%
+    add_histogram(x = x_st_wage_before_pa, 
+                  xbins = xbins,
+                  histnorm = "percent",
+                  name = "Wage Before (Pennsylvania)") %>%
+    layout(barmode = "group", title = "February 1992",
+           xaxis = list(tickvals=seq(4.25, 5.55, 0.1),
+                        title = "Wage in $ per hour"),
+           yaxis = list(range = c(0, 50)),
+                      margin = list(b = 100, 
+                          l = 80, 
+                          r = 80, 
+                          t = 80, 
+                          pad = 0, 
+                          autoexpand = TRUE))
+  p
+```
+
+```{r}
+# WAGE AFTEER
+  x_st_wage_after_nj <- 
+  data$x_st_wage_after[data$d_nj == 1]
+  x_st_wage_after_pa <- 
+    data$x_st_wage_after[data$d_pa == 1]
+
+# Make a stacked bar plot - Plotly
+  xbins <- list(start=4.20,
+                end=5.60,
+                size=0.1)
+  p <- plot_ly(alpha = 0.6) %>%
+    add_histogram(x = x_st_wage_after_nj, 
+                  xbins = xbins,
+                  histnorm = "percent", 
+                  name = "Wage After (New Jersey)") %>%
+    add_histogram(x = x_st_wage_after_pa, 
+                  xbins = xbins,
+                  histnorm = "percent",
+                  , name = "Wage After (Pennsylvania)") %>%
+    layout(barmode = "group", title = "November 1992",
+           xaxis = list(tickvals=seq(4.25, 5.55, 0.1),
+                        title = "Wage in $ per hour"),
+             yaxis = list(range = c(0, 100)),
+           margin = list(b = 100, 
+                          l = 80, 
+                          r = 80, 
+                          t = 80, 
+                          pad = 0, 
+                          autoexpand = TRUE))
+  p
+```
+
+```{r}
+# Table 3: Column 1-3, Row 1 (from left to right)
+library(kableExtra)
+# 1st row: MEANs and SEs across subgroups
+  results <- data %>% group_by(d_nj) %>% # group_by the treatment variable
+            dplyr::select(d_nj, y_ft_employment_before) %>% # only keep variabel of interest
+            group_by(N = n(), add = TRUE) %>% # count number of rows
+            summarize_all(funs(mean, var, na_sum = sum(is.na(.))), na.rm = TRUE) %>% # aggregate/summarize data
+            mutate(n = N - na_sum) %>% 
+            mutate(se = sqrt(var/n))
+
+# Add row with differences
+  results <- bind_rows(results, results[2,]-results[1,])
+  results$group<- c("Control (Pennsylvania)", "Treatment (New Jersey)", "Difference")
+  kable(results, digits=2)
+```
+
+```{r}
+# Calculate SE for difference: SE = SQR(VAR/N + VAR/N)
+  diff_se <- sqrt(results$var[1]/results$n[1] + results$var[2]/results$n[2])
+  diff_se
+```
+
+```{r}
+# 2nd row: MEANs, SEs etc.
+   results <- data %>% group_by(d_nj) %>% # group_by the treatment variable
+            dplyr::select(d_nj, x_burgerking ) %>% # only keep variabel of interest x_burgerking can be changed to other variables
+            dplyr::group_by(N = n(), add = TRUE) %>% # count number of rows
+            summarize_all(funs(mean, var, na_sum = sum(is.na(.))), na.rm = TRUE) %>% # aggregate/summarize data
+            mutate(n = N - na_sum) %>% 
+            mutate(se = sqrt(var/n)) 
+
+
+# 3rd row
+```
+
+
+
+```{r}
+data %>% group_by(d_nj) %>% 
+  summarise(mean.before = mean(y_ft_employment_before, na.rm=TRUE),
+            mean.after = mean(y_ft_employment_after, na.rm=TRUE),
+            var.before = var(y_ft_employment_before, na.rm=TRUE),
+            var.after = var(y_ft_employment_after, na.rm=TRUE),
+            n.before = sum(!is.na(y_ft_employment_before)),
+            n.after = sum(!is.na(y_ft_employment_after))) %>%
+                mutate(se.mean.before = sqrt(var.before/n.before)) %>%
+                mutate(se.mean.after = sqrt(var.after/n.after))
+
+```
+
+## DID estimate 
+```{r}
+
+data2 <- dplyr::select(data, 
+                         y_ft_employment_after,
+                         y_ft_employment_before,
+                         d_nj,
+                         x_burgerking,
+                         x_kfc,
+                         x_roys,
+                         x_co_owned,
+                         x_st_wage_before,
+                         x_st_wage_after,
+                         x_closed_permanently,
+                         x_southern_nj,
+                         x_central_nj,
+                         x_northeast_philadelphia,
+                         x_easton_philadelphia) %>%
+           mutate(x_st_wage_after = case_when(x_closed_permanently == 1 ~ NA_character_, # these stores get an NA
+                                              TRUE ~ as.character(x_st_wage_after)),
+                  x_st_wage_after = as.numeric(x_st_wage_after)) %>%
+                  na.omit()
+# Model (i)/Column 1 (See exercise)
+
+# Model (ii)/Column 2: Controls Chain/Ownership
+  fit2 <- lm((y_ft_employment_after-y_ft_employment_before) ~ 
+               d_nj + x_burgerking + x_kfc + x_roys + x_co_owned, 
+             data = data2)
+  summary(fit2)
+```
+
+```{r}
+head(data2)
+```
+## Instrumental variables
+## Background 
+The Slave Trade and the Origins of Mistrust in Africa (Nunn and Wantchekon 2011a)
+“current differences in trust levels within Africa can be traced back to the trans-Atlantic and Indian Ocean slave trades. Combining contemporary individual-level survey data with historic data on slave shipments by ethnic group, we find that individuals whose ancestors were heavily raided during the slave trade are less trusting today”
+Instrument: “instrument that is correlated with the number of slaves taken from an ethnic group but uncorrelated with any characteristics of the ethnic group that may affect the trust of descendants […] distance of an individual’s ethnic group from the coast during the slave trade […] instrument captures an ethnic group’s exposure to the external demand for slaves, since slaves were purchased at the coast before being shipped overseas. Further, distance from the coast is plausibly uncorrelated with other factors that affected the trust of their descendants.” (Nunn and Wantchekon 2011a, 3239)
+Narrow and Scientific Replication of ‘the Slave Trade and the Origins of Mistrust in Africa’ Deconinck and Verpoorten (2013)
+Treatment: Slave Trade (1400-1900)
+Outcome: Present-day levels of Trust (2005)
+Q: In how far may a large time period between cause and outcome be problematic?
+Instrument: Ethnic group’s distance from the coast
+
+
+
+The data is Nunn_Wantchekon_AER_2011.dta. You can download it on Nathanial Nunn’s website. It contains many variables but we’ll only speak about a few in the lab session.
+
+Data and files available under the link given in Section 1.3.
+
+respno: Respondent number in Afrobarometer dataset
+
+murdock_name: Ethnicity name: from Murdock
+
+exports: (Atlantic+Indian Exports)
+
+ln_exports: ln(1+Atlantic+Indian Exports)
+
+trust_relatives: Trust of relatives: q84a
+
+trust_neighbors: Trust of neighbors: q84b
+
+intra_group_trust: Intra-group trust: q84d
+
+inter_group_trust: Inter-group trust: q84c
+
+trust_local_council: Trust of local government council: q55d
+
+distsea: Historic distance from coast 1000s kms
+
+ethnicity: Ethnicity name: from Afrobarometer q79
+
+isocode: Country 3 digit iso code
+
+region: Region: from Afrobarometer
+
+district: District: from Afrobarometer
+
+townvill: Town/village: from Afrobarometer
+
+location_id: Unique location-of-repondent identifier - based on isocode region district townv
+
+ln_export_area: Log [(total slave exports: Atlantic + Indian) / area (km^2)
+
+export_area: (total slave exports: Atlantic + Indian) / area (km^2)
+
+export_pop: Exports divided by historic Murdock population
+
+ln_export_pop: Ln (1+exports/Murdock historic population)
+
+age: Age: q1
+
+age2: Age squared
+
+male: Indicator for respondent being male: q101
+
+urban_dum: Indicator for respondent living in urban area
+
+occupation: Occupation categories: q95
+
+religion: Religion categories: q91
+
+living_conditions: Living condition categories:q4b
+
+education: Education categories: Afrobarometer q90
+
+near_dist: Current distance from coast 1000s kms
+
+loc_murdock_name: Murdock identifier for the current location of the respondent
+
+loc_ln_export_area: Slave exports measure based on current location of respondent
+
+local_council_performance: Perceived performance of local council: q68c
+
+council_listen: Does the local council listen: q62b
+
+corrupt_local_council: How much corruption in local council: q56c
+
+school_present: Is there a school in the PSU: q116b
+
+electricity_present: Is there electricity in the PSU: q116d
+
+piped_water_present: Is there piped water in the PSU: q116e
+
+sewage_present: Is there sewage in the PSU: q116f
+
+health_clinic_presesnt: Is there a health clinic in the PSU: q116g
+
+district_ethnic_frac: District-level ethnic fractionalization
+
+frac_ethnicity_in_district: Proportion of ethnic group in district
+
+townvill_nonethnic_mean_exports: Avg slave exports of other ethnicities within town/village
+
+district_nonethnic_mean_exports: Avg slave exports of other ethnicities within district
+
+region_nonethnic_mean_exports: Avg slave exports of other ethnicities within region
+
+country_nonethnic_mean_exports: Avg slave exports of other ethnicities within country
+
+murdock_centr_dist_coast: Historic distance of ethnicity’s centroid from the coast (in kms)
+
+centroid_lat: Historic latitude of centroid of ethnic group
+
+centroid_long: Historic longitude of centroid of ethnic group
+
+explorer_contact: Indicator for historic contact with European explorer
+
+railway_contact: Indicator variable for historic integration into the colonial railway network
+
+dist_Saharan_node: Historic distance of ethnicity’s centroid from a centroid (town) in Saharan trad
+
+dist_Saharan_line: Historic distance of ethnicity’s centroid from a line (route) in Saharan trade (
+
+malaria_ecology: Ethnic groups average malaria ecology measure
+
+v30: Pre-colonial settlement patterns of ethnicity: from Ethngraphic Atlas v30
+
+v33: Pre-colonial juris. hierarchy beyond the local community: Ethnographic Atlas v33
+
+fishing: Pre-colonial reliance on fishing: Ethnographic Atlas
+
+total_missions_area: Total Catholic + Protestant mission per land area
+
+ln_init_pop_density: Log population density during the colonial period - from Murdock
+
+cities_1400_dum: Indicator for existence of city among ethnic group in 1400
+```{r}
+
+```
+
+
+
+## Regression discontinuity
+## Background 
+The dataset is fouirnaies_hall_financial_incumbency_advantage.dta, the data provided by Skovron and Titiunik (2015) in their best practices paper. The data and the original code (on which the code below is based) can also be found in the replication files provied by Skovron and Titiunik (2015) for which you can find a link in their paper. Importantly, for the illustration Skovron and Titiunik (2015) use a subset of the original data in which they filter out U.S. House legislature and focus on state legislatures:
+
+“We focus only on Fouirnaies and Hall’s analysis of state legislative elections, using 32,670 races at the state legislative district level. The score [variable] is the Democratic margin of victory at t in the district (the vote percentage obtained by the Democratic party minus the vote percentage obtained by its strongest opponent), and the treatment is winning election t. The Democratic party wins the election when its margin of victory is positive and loses when it is negative, so the cutoff is zero.The outcome we analyze is the Democratic share of total contributions in the district at t + 1” (Skovron and Titiunik 2015, 29)
+
+cov_statelevel (subset variable): Dummy for state level elections (we use only this subset of elections!)
+
+x_score_victorymargin (running variable): Democratic margin of victory at t in the district (the vote percentage obtained by the Democratic party minus the vote percentage obtained by its strongest opponent)
+
+y_donationshare (outcome variable of interest): Outcome variable share of donations flowing to the incumbent’s party in percent
+
+cov_total_race_money (Covariate as outcome): Total money in race
+
+cov_total_votes (Covariate as outcome): Total votes in race
+
+cov_dem_inc (Covariate as outcome): Democratic incumbent
+
+cov_rep_inc (Covariate as outcome): Republican incumbent
+
+cov_total_group_money (Covariate as outcome): Total group money
+# Regression Discontinuity
+```{r}
+  # set.seed(48104) # ?set.seed 
+ library(dplyr)
+# Load data
+  data_rdd <- foreign::read.dta("https://docs.google.com/uc?id=1xWHmST5FYcfLxe9V7Hwqd2LIy_A3ninG&export=download")
+  # data_rdd <- foreign::read.dta("www/rdd-fouirnaies_hall_financial_incumbency_advantage.dta")
+  data_rdd <- data_rdd %>% rename(x_score_victorymargin = rv,
+                                  y_donationshare = dv_money,
+                                  cov_statelevel = statelevel,
+                                  cov_total_race_money = total_race_money,
+                                  cov_total_votes = total_votes,
+                                  cov_dem_inc = dem_inc,
+                                  cov_rep_inc = rep_inc,
+                                  cov_total_group_money = total_group_money) %>% 
+    dplyr::select(x_score_victorymargin,
+           y_donationshare,
+           cov_statelevel,
+           cov_total_race_money,
+           cov_total_votes,
+           cov_dem_inc,
+           cov_rep_inc,
+           cov_total_group_money,
+           state,
+           dist,
+           year)
+```
+
+```{r}
+head(data_rdd)
+```
+
+```{r}
+library(rdrobust)
+library(rddensity)
+#?rdrobust
+```
+
+```{r}
+#  Density test
+summary(rddensity(X = data_rdd$x_score_victorymargin, vce="jackknife"))
+```
+
+```{r}
+# Total money in race
+  summary(rdrobust(data_rdd$cov_total_race_money, data_rdd$x_score_victorymargin, all=TRUE))
+```
+
+```{r}
+  rdplot(data_rdd$cov_total_race_money,data_rdd$x_score_victorymargin,
+         x.lim = c(-10,10),
+         y.lim = c(0,400000),
+         x.lab="Democratic margin of victory at t",
+         y.lab="Total money in race at t+1", title = "")
+```
+```{r}
+# Total votes in race
+  summary(rdrobust(data_rdd$cov_total_votes,data_rdd$x_score_victorymargin,all=TRUE))
+```
+
+```{r}
+  rdplot(data_rdd$cov_total_votes,data_rdd$x_score_victorymargin,
+         x.lim = c(-10,10),
+         y.lim = c(0,50000),
+         x.lab="Democratic margin of victory at t",
+         y.lab="Total votes in race at t+1", title = "")
+```
+
